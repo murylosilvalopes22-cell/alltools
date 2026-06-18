@@ -1,0 +1,118 @@
+/* BentoAnimations.css - Advanced SVG Stroke Animations */
+
+.small-icon {
+  transition: all 0.3s ease;
+}
+
+/* =========================================
+   1. O Padrão: Desenhar o SVG (Line Drawing) 
+   Base para a maioria dos ícones, cria o efeito de serem desenhados na tela
+   ========================================= */
+.bento-card:hover .small-icon path,
+.bento-card:hover .small-icon line,
+.bento-card:hover .small-icon polyline,
+.bento-card:hover .small-icon circle,
+.bento-card:hover .small-icon rect {
+  stroke-dasharray: 120;
+  stroke-dashoffset: 120;
+  animation: draw-svg-line 1.2s ease-out forwards;
+}
+
+@keyframes draw-svg-line {
+  0% { stroke-dashoffset: 120; opacity: 0; }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+/* =========================================
+   2. Exceções: Animações Específicas
+   Removemos a animação global (draw-svg-line) de ícones que terão animações complexas próprias
+   ========================================= */
+
+/* QR Code (Scanner a laser sem neon verde) */
+.bento-card:hover .anim-svg-qrcode path,
+.bento-card:hover .anim-svg-qrcode rect {
+  animation: none; /* Desativa a global */
+  stroke-dasharray: 10;
+  animation: qr-laser 1s infinite linear;
+}
+@keyframes qr-laser {
+  0% { stroke-dashoffset: 10; opacity: 0.5; }
+  50% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -10; opacity: 0.5; }
+}
+
+/* Lightbulb (Banco de Ideias - Raios correndo) */
+.bento-card:hover .anim-svg-lightbulb {
+  filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.8));
+  color: #facc15;
+}
+.bento-card:hover .anim-svg-lightbulb path {
+  animation: none;
+  stroke-dasharray: 50;
+  animation: lightbulb-spark 1.5s infinite linear;
+}
+@keyframes lightbulb-spark {
+  0% { stroke-dashoffset: 50; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* MonitorCog (Engrenagem girando em 75% 25%) */
+.bento-card:hover .anim-svg-monitorcog path:nth-of-type(n+2):nth-of-type(-n+9),
+.bento-card:hover .anim-svg-monitorcog circle {
+  stroke-dasharray: none; /* Traz o ícone de volta */
+  stroke-dashoffset: 0;
+  transform-origin: 75% 25%;
+  animation: cog-spin 2.5s infinite linear;
+}
+
+/* ServerCog (Engrenagem girando em 50% 50%) */
+.bento-card:hover .anim-svg-servercog path:nth-of-type(-n+6),
+.bento-card:hover .anim-svg-servercog path:nth-of-type(n+11) {
+  stroke-dasharray: none; /* Traz o ícone de volta */
+  stroke-dashoffset: 0;
+  transform-origin: 50% 50%;
+  animation: cog-spin 2.5s infinite linear;
+}
+
+@keyframes cog-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* FileText / FileCode2 / FileSpreadsheet / ClipboardList (Escrita de Documento) */
+/* As linhas de texto vão e voltam em loop */
+.bento-card:hover .anim-svg-filetext line,
+.bento-card:hover .anim-svg-filecode2 line,
+.bento-card:hover .anim-svg-filespreadsheet line,
+.bento-card:hover .anim-svg-clipboardlist line {
+  stroke-dasharray: 20;
+  animation: typing-lines 1.5s infinite;
+}
+@keyframes typing-lines {
+  0% { stroke-dashoffset: 20; }
+  50%, 100% { stroke-dashoffset: 0; }
+}
+
+/* BrainCircuit (Sinapses) */
+.bento-card:hover .anim-svg-braincircuit path {
+  stroke-dasharray: 15;
+  animation: neural-flow 1.5s infinite linear;
+  stroke: var(--neon-cyan);
+}
+@keyframes neural-flow {
+  0% { stroke-dashoffset: 30; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* Download (Seta caindo) */
+.bento-card:hover .anim-svg-download path:first-of-type,
+.bento-card:hover .anim-svg-download line {
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  animation: arrow-bounce 1.5s infinite ease-in-out;
+}
+@keyframes arrow-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(4px); stroke: var(--neon-cyan); }
+}

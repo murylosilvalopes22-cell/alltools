@@ -1,0 +1,86 @@
+.thanos-wrapper {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999999;
+}
+
+.thanos-trigger-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #fbbf24;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.thanos-trigger-btn:hover {
+  transform: scale(1.5);
+  box-shadow: 0 0 15px rgba(251, 191, 36, 1);
+}
+
+.thanos-trigger-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  transform: scale(1);
+}
+
+.thanos-container {
+  position: absolute;
+  bottom: 25px;
+  right: 0px;
+  width: 400px;
+  height: 400px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.5) translateY(50px);
+  transform-origin: bottom right;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.thanos-container.visible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.thanos-video {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Screen mode faz com que TUDO que for 100% preto desapareça perfeitamente! */
+  mix-blend-mode: screen;
+  border-radius: 50%;
+  box-shadow: none;
+  z-index: 1;
+}
+
+/* The Snapped Animation */
+@keyframes dust-away {
+  0% {
+    filter: blur(0px) grayscale(0) sepia(0);
+    opacity: 1;
+    translate: 0px 0px;
+    scale: 1;
+  }
+  30% {
+    filter: blur(2px) grayscale(0.5) sepia(0.5) hue-rotate(-30deg);
+    opacity: 0.8;
+    translate: 0px -5px;
+    scale: 0.98;
+  }
+  100% {
+    filter: blur(10px) grayscale(1) sepia(1);
+    opacity: 0;
+    translate: 0px -80px;
+    scale: 0.9;
+  }
+}
+
+.snapped {
+  animation: dust-away 4s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+  pointer-events: none !important;
+  box-shadow: 0 -20px 40px rgba(0,0,0,0.5) !important;
+}

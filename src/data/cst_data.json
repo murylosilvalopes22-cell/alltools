@@ -1,0 +1,90 @@
+[
+  {
+    "codigo": "000",
+    "descricao": "Tributação integral"
+  },
+  {
+    "codigo": "010",
+    "descricao": "Tributação com alíquotas uniformes"
+  },
+  {
+    "codigo": "011",
+    "descricao": "Tributação com alíquotas uniformes reduzidas"
+  },
+  {
+    "codigo": "200",
+    "descricao": "Alíquota reduzida"
+  },
+  {
+    "codigo": "210",
+    "descricao": "Redução de alíquota com redutor de base de cálculo"
+  },
+  {
+    "codigo": "220",
+    "descricao": "Alíquota fixa"
+  },
+  {
+    "codigo": "222",
+    "descricao": "Redução de base de cálculo"
+  },
+  {
+    "codigo": "221",
+    "descricao": "Alíquota fixa proporcional"
+  },
+  {
+    "codigo": "400",
+    "descricao": "Isenção"
+  },
+  {
+    "codigo": "410",
+    "descricao": "Imunidade e não incidência"
+  },
+  {
+    "codigo": "510",
+    "descricao": "Diferimento"
+  },
+  {
+    "codigo": "515",
+    "descricao": "Diferimento com redução de alíquota"
+  },
+  {
+    "codigo": "550",
+    "descricao": "Suspensão"
+  },
+  {
+    "codigo": "620",
+    "descricao": "Tributação monofásica"
+  },
+  {
+    "codigo": "800",
+    "descricao": "Transferência de crédito"
+  },
+  {
+    "codigo": "810",
+    "descricao": "Ajuste de IBS na ZFM"
+  },
+  {
+    "codigo": "811",
+    "descricao": "Ajustes"
+  },
+  {
+    "codigo": "820",
+    "descricao": "Tributação em declaração de regime específico"
+  },
+  {
+    "codigo": "830",
+    "descricao": "Exclusão de base de cálculo"
+  },
+  {
+    "codigo": "000",
+    "descricao": "Legenda:"
+  },
+  {
+    "codigo": "000",
+    "descricao": "0 = Não é permitido"
+  },
+  {
+    "codigo": "000",
+    "descricao": "1 = Exige"
+  }
+]

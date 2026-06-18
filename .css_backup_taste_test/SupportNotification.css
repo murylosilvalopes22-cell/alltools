@@ -1,0 +1,86 @@
+.support-notification-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 48px;
+  border-radius: 24px;
+  cursor: pointer;
+  z-index: 100;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  background: var(--surface-main);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+  position: relative;
+}
+
+.support-notification-btn:hover {
+  border-color: #a855f7;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.support-notification-btn:active {
+  transform: scale(0.95);
+}
+
+.support-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #a855f7;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 50%;
+  min-width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid #1a1a24;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+[data-theme='light'] .support-badge {
+  border-color: #f0f0f5;
+}
+
+.support-notification-item {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  border-left: 4px solid #a855f7;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+[data-theme='light'] .support-notification-item {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.support-notification-item .module-name {
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: #a855f7;
+}
+
+.support-notification-item .status-novas {
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.support-notification-item .status-testes {
+  color: #eab308;
+  font-size: 0.75rem;
+  font-weight: bold;
+}

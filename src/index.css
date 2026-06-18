@@ -1,0 +1,525 @@
+:root {
+  --bg-color: #050505;     /* Anti-slop: Softer Deep Obsidian */
+  --surface-main: rgba(255, 255, 255, 0.03); /* Anti-slop: Soft glass */
+  --border-glass: rgba(255, 255, 255, 0.06);
+  --border-light: rgba(255, 255, 255, 0.1);
+  
+  --text-primary: #f8fafc; /* Softer white */
+  --text-muted: rgba(255, 255, 255, 0.45);
+
+  --primary-color: #3b82f6;
+  --primary-color-rgb: 59, 130, 246;
+  --accent-color: #8b5cf6;
+
+  /* Anti-slop: Softer pastel-leaning neons */
+  --neon-cyan: #38bdf8;
+  --neon-purple: #a78bfa;
+  --neon-orange: #fb923c;
+  
+  --wip-text: #fb923c;
+  --active-text: #38bdf8;
+  --wip-muted: rgba(251, 146, 60, 0.15);
+  --active-muted: rgba(56, 189, 248, 0.15);
+
+  --bg-hero: linear-gradient(145deg, rgba(30, 30, 40, 0.2), rgba(10, 10, 15, 0.4));
+  --hero-border: rgba(167, 139, 250, 0.2);
+  --gradient-text-start: #f8fafc;
+  --gradient-text-end: #94a3b8;
+  --icon-box-bg: rgba(255, 255, 255, 0.03);
+
+  --large-icon-color: rgba(255, 255, 255, 0.04);
+  --glow-opacity: 0.12;
+  
+  --hero-example-bg: rgba(0, 0, 0, 0.2);
+  --text-hero-example: #cbd5e1;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255,255,255,0.05);
+
+  --font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+[data-theme='light'] {
+  --bg-color: #f8fafc;     
+  --surface-main: rgba(255, 255, 255, 0.8);
+  --border-glass: rgba(0, 0, 0, 0.06); 
+  --border-light: rgba(0, 0, 0, 0.1);
+  
+  --text-primary: #0f172a;
+  --text-muted: rgba(15, 23, 42, 0.55);
+  
+  --primary-color: #2563eb;
+  --primary-color-rgb: 37, 99, 235;
+  --accent-color: #7c3aed;
+
+  /* Darker tones for Light Mode Tags to guarantee readability */
+  --neon-cyan: #0284c7;
+  --neon-purple: #6d28d9;
+  --neon-orange: #ea580c;
+  
+  --wip-text: #c2410c; 
+  --active-text: #0369a1;
+  --wip-muted: rgba(234, 88, 12, 0.1);
+  --active-muted: rgba(2, 132, 199, 0.1);
+
+  --bg-hero: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.9));
+  --hero-border: rgba(109, 40, 217, 0.15);
+  --gradient-text-start: #0f172a;
+  --gradient-text-end: #475569;
+  --icon-box-bg: rgba(0, 0, 0, 0.03);
+  
+  --large-icon-color: rgba(15, 23, 42, 0.15);
+  --glow-opacity: 0.06;
+  
+  --hero-example-bg: rgba(0, 0, 0, 0.03);
+  --text-hero-example: #334155;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255,255,255,1);
+}
+
+/* Developer Mode General Page Background */
+[data-dev-mode='true'] {
+  --bg-color: #1a0f26; /* Dark purple subtle tint */
+}
+
+[data-theme='light'][data-dev-mode='true'] {
+  --bg-color: #f6f0fa; /* Light purple subtle tint */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+body, html {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  min-height: 100vh;
+  overflow-x: hidden;
+  letter-spacing: -0.01em; /* Taste-Skill: Tighter letter spacing */
+  transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Scrollbar Custom */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Glass panel global */
+.glass-panel {
+  background: var(--surface-main);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Global Button Styles */
+.btn-primary {
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: var(--primary-color);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(var(--primary-color-rgb), 0.5);
+  filter: brightness(1.1);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-secondary {
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.1);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-delete {
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  padding: 12px 24px;
+  border-radius: 12px;
+  background: #ef4444;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5);
+  background: #dc2626;
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-info {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-info:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+}
+
+.btn-action {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-action.outline {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-action.outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-action.outline.copied {
+  background: rgba(163, 230, 53, 0.1);
+  color: #a3e635;
+  border-color: rgba(163, 230, 53, 0.3);
+}
+
+.btn-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Global Back Button */
+.back-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted, var(--text-secondary));
+  padding: 8px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-bottom: 24px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  transform: translateX(-4px);
+}
+
+/* Global Checklist Styles */
+.checklist-content {
+  padding: 24px;
+}
+
+.checklist-section {
+  margin-bottom: 32px;
+}
+
+.checklist-section h2 {
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.check-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.check-label:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.check-label.critical {
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.check-label.critical:hover {
+  background: rgba(234, 179, 8, 0.15);
+}
+
+.check-label input[type="checkbox"] {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  margin-top: 2px;
+}
+
+.check-label input[type="checkbox"]:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.check-label input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 12px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.check-text {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  transition: all 0.2s ease;
+}
+
+.check-label input[type="checkbox"]:checked ~ .check-text {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+/* Global Upload Card */
+.upload-card {
+  border: 2px dashed var(--border-light);
+  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--surface-main);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.upload-card:hover, .upload-card.drag-active {
+  border-color: var(--neon-cyan, #06b6d4);
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.upload-card p {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.upload-card span {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+/* Global Tabs Navigation */
+.tabs-nav {
+  display: flex;
+  background: var(--surface-main);
+  border: 1px solid var(--border-glass, rgba(255,255,255,0.1));
+  border-radius: 16px;
+  padding: 8px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(16px);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, var(--text-secondary));
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.tab-btn.active {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.tab-btn:not(.active):hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.tab-badge {
+  background: var(--neon-cyan, #06b6d4);
+  color: #000;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-left: 8px;
+}
+
+/* Global Disable Animations Override */
+.no-animations * {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Specific fix to disable hover movements without breaking structural absolute transforms */
+.no-animations .bento-card:hover {
+  transform: none !important;
+  box-shadow: inherit !important;
+}
+
+.no-animations .bento-card:hover .large-icon,
+.no-animations .bento-card:hover img {
+  transform: none !important;
+}

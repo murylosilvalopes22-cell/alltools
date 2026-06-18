@@ -1,0 +1,243 @@
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.welcome-modal {
+  background: var(--surface-main, #1e293b);
+  border: 1px solid var(--border-light, rgba(255,255,255,0.1));
+  border-radius: 16px; /* Anti-slop: 16px instead of 24px */
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08); /* Anti-slop: layered modal shadow */
+  overflow: hidden;
+  position: relative;
+}
+
+.welcome-header {
+  padding: 32px 32px 24px;
+  border-bottom: 1px solid var(--border-light, rgba(255,255,255,0.1));
+  position: relative;
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.05), rgba(139, 92, 246, 0.05)); /* Anti-slop: Softer gradient */
+}
+
+.welcome-header h1 {
+  font-size: 2.2rem;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: -0.03em; /* Anti-slop: Tighter headings */
+}
+
+.welcome-header h1 .icon-sparkles {
+  color: var(--neon-cyan);
+}
+
+.welcome-header p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.welcome-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-close:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--text-primary);
+}
+
+.welcome-body {
+  padding: 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.welcome-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.welcome-section h2 {
+  font-size: 1.4rem;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255,255,255,0.05);
+}
+
+.welcome-section h2 svg {
+  color: var(--neon-purple);
+}
+
+.welcome-section p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.welcome-status-list {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.welcome-status-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0,0,0,0.2);
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-light);
+  flex: 1;
+  min-width: 250px;
+}
+
+.welcome-tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.welcome-tool-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.welcome-tool-card h3 {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.welcome-tool-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.welcome-changelog {
+  background: rgba(56, 189, 248, 0.05);
+  border-left: 4px solid var(--neon-cyan);
+  padding: 20px;
+  border-radius: 0 12px 12px 0;
+}
+
+.welcome-changelog ul {
+  margin: 12px 0 0 0;
+  padding-left: 24px;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.welcome-changelog li strong {
+  color: var(--text-primary);
+}
+
+.welcome-footer {
+  padding: 24px 32px;
+  border-top: 1px solid var(--border-light, rgba(255,255,255,0.1));
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0,0,0,0.2);
+}
+
+/* Custom Animated Green Checkbox */
+.custom-green-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.custom-green-checkbox .checkbox-box {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.custom-green-checkbox.checked .checkbox-box {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.custom-green-checkbox span {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.custom-green-checkbox.checked span {
+  color: #10b981;
+}
+
+.custom-green-checkbox svg {
+  width: 14px;
+  height: 14px;
+}
+
+[data-theme="light"] {
+  .welcome-header { background: linear-gradient(145deg, rgba(37, 99, 235, 0.05), rgba(124, 58, 237, 0.05)); }
+  .welcome-tool-card { background: #fff; border-color: #e2e8f0; }
+  .welcome-status-item { background: #fff; border-color: #e2e8f0; }
+  .welcome-changelog { background: #f0f9ff; }
+}

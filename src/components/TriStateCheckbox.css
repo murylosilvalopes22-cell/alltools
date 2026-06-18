@@ -1,0 +1,64 @@
+.tri-state-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  border: 2px solid var(--border-light);
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.tri-state-box:hover {
+  border-color: var(--neon-cyan);
+}
+
+.tri-state-box.state-0 {
+  /* Vazio */
+}
+
+.tri-state-box.state-1 {
+  /* Checked - Green */
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.tri-state-box.state-2 {
+  /* N/A - Grey Dash */
+  background: #64748b;
+  border-color: #64748b;
+  color: white;
+}
+
+.tri-state-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.tri-state-wrapper:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tri-state-label {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  user-select: none;
+}
+
+.tri-state-wrapper.critical .tri-state-label {
+  color: #f87171;
+  font-weight: 500;
+}
+
+.tri-state-wrapper.critical .tri-state-box.state-0 {
+  border-color: rgba(248, 113, 113, 0.5);
+}

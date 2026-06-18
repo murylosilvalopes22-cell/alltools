@@ -1,0 +1,215 @@
+.tributacao-container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+}
+
+.tributacao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.tributacao-upload-card {
+  background: var(--bg-card);
+  border: 2px dashed var(--border-color);
+  padding: 40px 20px;
+  border-radius: 16px;
+  text-align: center;
+  margin-top: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.upload-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.upload-btn {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+}
+
+.table-wrapper {
+  flex: 1;
+  min-height: 800px;
+  overflow: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+[data-theme='light'] .table-wrapper {
+  background: #fff;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.tributacao-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1200px; /* Garante espaço horizontal */
+}
+
+.tributacao-table th {
+  background: rgba(30, 41, 59, 0.95);
+  color: white;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid var(--border-color);
+  backdrop-filter: blur(8px);
+  vertical-align: top;
+  height: 1px; /* Trick to make height: 100% work on inner flex children in tables */
+  min-width: 100px; /* Garante espaço mínimo para os inputs */
+}
+
+.th-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.th-title {
+  display: block;
+  margin-bottom: auto; /* Pushes input to the bottom */
+}
+
+[data-theme='light'] .tributacao-table th {
+  background: rgba(248, 250, 252, 0.95);
+  color: #1e293b;
+}
+
+.tributacao-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.tributacao-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme='light'] .tributacao-table tbody tr:hover td {
+  background: #f1f5f9;
+}
+
+.filter-input {
+  width: 100%;
+  min-width: 80px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.filter-input:focus {
+  border-color: #a855f7;
+}
+
+[data-theme='light'] .filter-input {
+  background: white;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-btn:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme='light'] .page-btn:not(:disabled):hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  gap: 16px;
+  backdrop-filter: blur(4px);
+}

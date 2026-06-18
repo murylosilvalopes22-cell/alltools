@@ -1,0 +1,257 @@
+.feedback-board-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  
+  --primary: #f43f5e;
+  --primary-glow: rgba(244, 63, 94, 0.4);
+}
+
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 24px;
+}
+
+.kanban-column {
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 700px;
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+.kanban-col-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.kanban-col-header.novas { border-top: 4px solid #3b82f6; }
+.kanban-col-header.testes { border-top: 4px solid #f59e0b; }
+.kanban-col-header.finalizadas { border-top: 4px solid #10b981; }
+
+.kanban-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.kanban-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.solicitacao-card {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.solicitacao-card:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.sol-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sol-modulo {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+.sol-tipo {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+.sol-tipo.bug { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+.sol-tipo.sugestao { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+.sol-tipo.duvida { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
+
+.sol-body {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.sol-admin-obs {
+  margin-top: 8px;
+  background: rgba(16, 185, 129, 0.1);
+  border-left: 3px solid #10b981;
+  padding: 10px;
+  border-radius: 4px 8px 8px 4px;
+  font-size: 0.85rem;
+  color: #a7f3d0;
+}
+
+.sol-admin-obs textarea {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: 6px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.sol-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sol-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.sol-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.sol-actions button {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sol-actions button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.sol-actions button.danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.sol-actions button.success {
+  background: var(--primary);
+  border-color: transparent;
+}
+
+.sol-actions button.success:hover {
+  background: #e11d48;
+}
+
+[data-theme="light"] {
+  .kanban-column {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  }
+  .kanban-col-header {
+    border-bottom-color: #e2e8f0;
+  }
+  .solicitacao-card {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+  .sol-tipo {
+    background: #f1f5f9;
+    color: #475569;
+  }
+  .sol-tipo.bug { background: #fee2e2; color: #b91c1c; }
+  .sol-tipo.sugestao { background: #dbeafe; color: #1d4ed8; }
+  .sol-tipo.duvida { background: #f3e8ff; color: #6b21a8; }
+  
+  .sol-admin-obs {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .sol-admin-obs textarea {
+    background: #ffffff;
+    border-color: #a7f3d0;
+    color: #065f46;
+  }
+  .sol-actions button {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #475569;
+  }
+  .sol-actions button:hover {
+    background: #f1f5f9;
+  }
+  .sol-footer {
+    border-top-color: #e2e8f0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .kanban-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .kanban-column {
+    height: 500px;
+  }
+}
+@media (max-width: 768px) {
+  .feedback-board-container {
+    padding: 16px;
+  }
+  .kanban-column {
+    height: auto;
+    min-height: 400px;
+    max-height: 600px;
+  }
+  .sol-actions button {
+    width: 44px;
+    height: 44px;
+  }
+}

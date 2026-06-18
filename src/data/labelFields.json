@@ -1,0 +1,688 @@
+[
+  {
+    "id": "001",
+    "nome": "Codproduto",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP001</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Codproduto\"]"
+  },
+  {
+    "id": "002",
+    "nome": "CodBarra",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP002</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CodBarra\"]"
+  },
+  {
+    "id": "003",
+    "nome": "Descricao",
+    "tamanho": 25,
+    "tag": "<CAMPO>CMP003</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Descricao\"]"
+  },
+  {
+    "id": "004",
+    "nome": "Descricao",
+    "tamanho": 25,
+    "tag": "<CAMPO>CMP004</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Descricao\"]"
+  },
+  {
+    "id": "005",
+    "nome": "DescReduzida",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP005</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DescReduzida\"]"
+  },
+  {
+    "id": "006",
+    "nome": "DescReduzida",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP006</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DescReduzida\"]"
+  },
+  {
+    "id": "007",
+    "nome": "Grupo",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP007</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Grupo\"]"
+  },
+  {
+    "id": "008",
+    "nome": "Setor",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP008</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Setor\"]"
+  },
+  {
+    "id": "009",
+    "nome": "Marca",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP009</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Marca\"]"
+  },
+  {
+    "id": "010",
+    "nome": "Preco",
+    "tamanho": 14,
+    "tag": "<CAMPO>CMP010</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Preco\"]"
+  },
+  {
+    "id": "011",
+    "nome": "PrecoVista",
+    "tamanho": 14,
+    "tag": "<CAMPO>CMP011</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"PrecoVista\"]"
+  },
+  {
+    "id": "012",
+    "nome": "Unidade",
+    "tamanho": 3,
+    "tag": "<CAMPO>CMP012</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Unidade\"]"
+  },
+  {
+    "id": "013",
+    "nome": "Localizacao",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP013</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Localizacao\"]"
+  },
+  {
+    "id": "014",
+    "nome": "Aliquota",
+    "tamanho": 3,
+    "tag": "<CAMPO>CMP014</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Aliquota\"]"
+  },
+  {
+    "id": "015",
+    "nome": "NomeEmpresa",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP015</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NomeEmpresa\"]"
+  },
+  {
+    "id": "016",
+    "nome": "NomeEmpresa",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP016</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NomeEmpresa\"]"
+  },
+  {
+    "id": "017",
+    "nome": "FoneEmpresa",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP017</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"FoneEmpresa\"]"
+  },
+  {
+    "id": "018",
+    "nome": "CustoMedio",
+    "tamanho": 14,
+    "tag": "<CAMPO>CMP018</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CustoMedio\"]"
+  },
+  {
+    "id": "019",
+    "nome": "OutrasInf",
+    "tamanho": 22,
+    "tag": "<CAMPO>CMP019</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"OutrasInf\"]"
+  },
+  {
+    "id": "020",
+    "nome": "Data_Lote",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP020</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Data_Lote\"]"
+  },
+  {
+    "id": "021",
+    "nome": "Lote",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP021</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Lote\"]"
+  },
+  {
+    "id": "022",
+    "nome": "Tbn_Codigo",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP022</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Codigo\"]"
+  },
+  {
+    "id": "023",
+    "nome": "Tbn_Porcao",
+    "tamanho": 70,
+    "tag": "<CAMPO>CMP023</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Porcao\"]"
+  },
+  {
+    "id": "024",
+    "nome": "Tbn_Calorias",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP024</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Calorias\"]"
+  },
+  {
+    "id": "025",
+    "nome": "Tbn_Carboidratos",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP025</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Carboidratos\"]"
+  },
+  {
+    "id": "026",
+    "nome": "Tbn_Proteina",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP026</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Proteina\"]"
+  },
+  {
+    "id": "027",
+    "nome": "Tbn_GordTotal",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP027</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_GordTotal\"]"
+  },
+  {
+    "id": "028",
+    "nome": "Tbn_GordSaturada",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP028</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_GordSaturada\"]"
+  },
+  {
+    "id": "029",
+    "nome": "Tbn_Colesterol",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP029</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Colesterol\"]"
+  },
+  {
+    "id": "030",
+    "nome": "Tbn_Fibra",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP030</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Fibra\"]"
+  },
+  {
+    "id": "031",
+    "nome": "Tbn_Calcio",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP031</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Calcio\"]"
+  },
+  {
+    "id": "032",
+    "nome": "Tbn_Ferro",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP032</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Ferro\"]"
+  },
+  {
+    "id": "033",
+    "nome": "Tbn_Sodio",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP033</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Tbn_Sodio\"]"
+  },
+  {
+    "id": "034",
+    "nome": "Prod_Ingredientes",
+    "tamanho": 25,
+    "tag": "<CAMPO>CMP034</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Prod_Ingredientes\"]"
+  },
+  {
+    "id": "035",
+    "nome": "CodFabrica",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP035</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CodFabrica\"]"
+  },
+  {
+    "id": "036",
+    "nome": "Validade",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP036</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Validade\"]"
+  },
+  {
+    "id": "037",
+    "nome": "Numero",
+    "tamanho": 8,
+    "tag": "<CAMPO>CMP037</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Numero\"]"
+  },
+  {
+    "id": "038",
+    "nome": "DataHoraLancto",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP038</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DataHoraLancto\"]"
+  },
+  {
+    "id": "039",
+    "nome": "DataHoraSaida",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP039</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DataHoraSaida\"]"
+  },
+  {
+    "id": "040",
+    "nome": "TipoLancto",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP040</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"TipoLancto\"]"
+  },
+  {
+    "id": "041",
+    "nome": "Situacao",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP041</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Situacao\"]"
+  },
+  {
+    "id": "042",
+    "nome": "NomeCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP042</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NomeCliente\"]"
+  },
+  {
+    "id": "043",
+    "nome": "NomeCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP043</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NomeCliente\"]"
+  },
+  {
+    "id": "044",
+    "nome": "EnderecoCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP044</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"EnderecoCliente\"]"
+  },
+  {
+    "id": "045",
+    "nome": "EnderecoCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP045</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"EnderecoCliente\"]"
+  },
+  {
+    "id": "046",
+    "nome": "NumeroCliente",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP046</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NumeroCliente\"]"
+  },
+  {
+    "id": "047",
+    "nome": "CidadeCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP047</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CidadeCliente\"]"
+  },
+  {
+    "id": "048",
+    "nome": "CidadeCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP048</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CidadeCliente\"]"
+  },
+  {
+    "id": "049",
+    "nome": "CodigoCliente",
+    "tamanho": 8,
+    "tag": "<CAMPO>CMP049</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CodigoCliente\"]"
+  },
+  {
+    "id": "050",
+    "nome": "Rota",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP050</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Rota\"]"
+  },
+  {
+    "id": "051",
+    "nome": "Qtde",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP051</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Qtde\"]"
+  },
+  {
+    "id": "052",
+    "nome": "DataCompra",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP052</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DataCompra\"]"
+  },
+  {
+    "id": "053",
+    "nome": "DocCompra",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP053</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DocCompra\"]"
+  },
+  {
+    "id": "054",
+    "nome": "NomeOferta",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP054</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NomeOferta\"]"
+  },
+  {
+    "id": "055",
+    "nome": "ProdDataCadastro",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP055</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"ProdDataCadastro\"]"
+  },
+  {
+    "id": "056",
+    "nome": "ProdDescontoMax",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP056</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"ProdDescontoMax\"]"
+  },
+  {
+    "id": "057",
+    "nome": "SubGrupo",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP057</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"SubGrupo\"]"
+  },
+  {
+    "id": "058",
+    "nome": "NumeroItem",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP058</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NumeroItem\"]"
+  },
+  {
+    "id": "059",
+    "nome": "BairroCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP059</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"BairroCliente\"]"
+  },
+  {
+    "id": "060",
+    "nome": "BairroCliente",
+    "tamanho": 15,
+    "tag": "<CAMPO>CMP060</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"BairroCliente\"]"
+  },
+  {
+    "id": "061",
+    "nome": "NumeroPedido",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP061</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"NumeroPedido\"]"
+  },
+  {
+    "id": "062",
+    "nome": "DescricaoCompleta",
+    "tamanho": 18,
+    "tag": "<CAMPO>CMP062</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DescricaoCompleta\"]"
+  },
+  {
+    "id": "063",
+    "nome": "DescricaoCompleta",
+    "tamanho": 18,
+    "tag": "<CAMPO>CMP063</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DescricaoCompleta\"]"
+  },
+  {
+    "id": "064",
+    "nome": "DescricaoCompleta",
+    "tamanho": 18,
+    "tag": "<CAMPO>CMP064</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DescricaoCompleta\"]"
+  },
+  {
+    "id": "065",
+    "nome": "DataGeracao",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP065</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DataGeracao\"]"
+  },
+  {
+    "id": "066",
+    "nome": "Sexo",
+    "tamanho": 6,
+    "tag": "<CAMPO>CMP066</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Sexo\"]"
+  },
+  {
+    "id": "067",
+    "nome": "EmbalagemUN",
+    "tamanho": 30,
+    "tag": "<CAMPO>CMP067</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"EmbalagemUN\"]"
+  },
+  {
+    "id": "068",
+    "nome": "CodEmbalagemUN",
+    "tamanho": 8,
+    "tag": "<CAMPO>CMP068</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CodEmbalagemUN\"]"
+  },
+  {
+    "id": "069",
+    "nome": "TaraEmbalagemUN",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP069</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"TaraEmbalagemUN\"]"
+  },
+  {
+    "id": "070",
+    "nome": "QtdeEmbalagemUN",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP070</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"QtdeEmbalagemUN\"]"
+  },
+  {
+    "id": "071",
+    "nome": "EmbalagemCX",
+    "tamanho": 30,
+    "tag": "<CAMPO>CMP071</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"EmbalagemCX\"]"
+  },
+  {
+    "id": "072",
+    "nome": "CodEmbalagemCX",
+    "tamanho": 8,
+    "tag": "<CAMPO>CMP072</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CodEmbalagemCX\"]"
+  },
+  {
+    "id": "073",
+    "nome": "TaraEmbalagemCX",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP073</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"TaraEmbalagemCX\"]"
+  },
+  {
+    "id": "074",
+    "nome": "QtdeEmbalagemCX",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP074</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"QtdeEmbalagemCX\"]"
+  },
+  {
+    "id": "075",
+    "nome": "Obs1",
+    "tamanho": 22,
+    "tag": "<CAMPO>CMP075</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Obs1\"]"
+  },
+  {
+    "id": "076",
+    "nome": "Obs1",
+    "tamanho": 18,
+    "tag": "<CAMPO>CMP076</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Obs1\"]"
+  },
+  {
+    "id": "077",
+    "nome": "Obs2",
+    "tamanho": 22,
+    "tag": "<CAMPO>CMP077</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Obs2\"]"
+  },
+  {
+    "id": "078",
+    "nome": "Obs2",
+    "tamanho": 18,
+    "tag": "<CAMPO>CMP078</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Obs2\"]"
+  },
+  {
+    "id": "079",
+    "nome": "EnderecoEmpresa",
+    "tamanho": 22,
+    "tag": "<CAMPO>CMP079</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"EnderecoEmpresa\"]"
+  },
+  {
+    "id": "080",
+    "nome": "EnderecoEmpresa",
+    "tamanho": 18,
+    "tag": "<CAMPO>CMP080</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"EnderecoEmpresa\"]"
+  },
+  {
+    "id": "081",
+    "nome": "EmailEmpresa",
+    "tamanho": 30,
+    "tag": "<CAMPO>CMP081</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"EmailEmpresa\"]"
+  },
+  {
+    "id": "082",
+    "nome": "SiteEmpresa",
+    "tamanho": 30,
+    "tag": "<CAMPO>CMP082</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"SiteEmpresa\"]"
+  },
+  {
+    "id": "083",
+    "nome": "CEPEmpresa",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP083</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CEPEmpresa\"]"
+  },
+  {
+    "id": "084",
+    "nome": "BairroEmpresa",
+    "tamanho": 30,
+    "tag": "<CAMPO>CMP084</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"BairroEmpresa\"]"
+  },
+  {
+    "id": "085",
+    "nome": "CidadeUFEmpresa",
+    "tamanho": 30,
+    "tag": "<CAMPO>CMP085</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CidadeUFEmpresa\"]"
+  },
+  {
+    "id": "086",
+    "nome": "Peso",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP086</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Peso\"]"
+  },
+  {
+    "id": "087",
+    "nome": "Total",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP087</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"Total\"]"
+  },
+  {
+    "id": "088",
+    "nome": "DataValidade",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP088</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"DataValidade\"]"
+  },
+  {
+    "id": "089",
+    "nome": "CodBarraBalanca",
+    "tamanho": 20,
+    "tag": "<CAMPO>CMP089</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"CodBarraBalanca\"]"
+  },
+  {
+    "id": "090",
+    "nome": "AcucarTotal",
+    "tamanho": 11,
+    "tag": "<CAMPO>CMP090</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"AcucarTotal\"]"
+  },
+  {
+    "id": "091",
+    "nome": "AcucarAdicionado",
+    "tamanho": 11,
+    "tag": "<CAMPO>CMP091</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"AcucarAdicionado\"]"
+  },
+  {
+    "id": "092",
+    "nome": "QtdePorcaoEmbalagem",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP092</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"QtdePorcaoEmbalagem\"]"
+  },
+  {
+    "id": "093",
+    "nome": "AltoEmAcucar",
+    "tamanho": 1,
+    "tag": "<CAMPO>CMP093</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"AltoEmAcucar\"]"
+  },
+  {
+    "id": "094",
+    "nome": "AltoEmSodio",
+    "tamanho": 1,
+    "tag": "<CAMPO>CMP094</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"AltoEmSodio\"]"
+  },
+  {
+    "id": "095",
+    "nome": "AltoEmGorduraSatura",
+    "tamanho": 1,
+    "tag": "<CAMPO>CMP095</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"AltoEmGorduraSatura\"]"
+  },
+  {
+    "id": "096",
+    "nome": "MedidaCaseira",
+    "tamanho": 30,
+    "tag": "<CAMPO>CMP096</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"MedidaCaseira\"]"
+  },
+  {
+    "id": "097",
+    "nome": "UnidadePorcao",
+    "tamanho": 1,
+    "tag": "<CAMPO>CMP097</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"UnidadePorcao\"]"
+  },
+  {
+    "id": "098",
+    "nome": "TamanhoPorcao",
+    "tamanho": 10,
+    "tag": "<CAMPO>CMP098</CAMPO>",
+    "fastReportTag": "[frxDBDsEtiqueta.\"TamanhoPorcao\"]"
+  }
+]

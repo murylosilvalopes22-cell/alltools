@@ -1,0 +1,35 @@
+.glow-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 0);
+  background-size: 30px 30px; /* Subtle tech grid pattern */
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.top-left {
+  top: -20%;
+  left: -10%;
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, var(--neon-purple) 0%, transparent 70%);
+}
+
+.bottom-right {
+  bottom: -20%;
+  right: -10%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, var(--neon-cyan) 0%, transparent 70%);
+}

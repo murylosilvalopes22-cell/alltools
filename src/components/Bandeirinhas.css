@@ -1,0 +1,65 @@
+.bandeirinhas-wrapper {
+  position: absolute;
+  top: 0; /* Voltou pro topo! */
+  left: -2%;
+  width: 104%;
+  height: 1200px; /* Altura moderada */
+  pointer-events: none;
+  z-index: 9999; 
+  overflow: hidden;
+}
+
+.corda-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1200px; /* O ViewBox agora mapeia 1200 unidades para 1200px */
+  z-index: 1;
+}
+
+.corda-path {
+  stroke: rgba(255, 255, 255, 0.8);
+}
+
+[data-theme='light'] .corda-path {
+  stroke: rgba(0, 0, 0, 0.4);
+}
+
+.flags-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1200px; /* Mesmo do SVG */
+  z-index: 2;
+}
+
+.flag {
+  width: 35px;
+  height: 50px;
+  transform: translateX(-50%); /* Centraliza exatamente no leftPos % */
+  transform-origin: top center;
+  animation: balanco 3s infinite ease-in-out alternate;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Bandeirinha tradicional (dois recortes embaixo) */
+.flag.tipo-1 {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+}
+
+/* Bandeirinha de um bico (triângulo embaixo) */
+.flag.tipo-2 {
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  height: 55px; /* Ligeiramente mais longa */
+}
+
+@keyframes balanco {
+  0% {
+    transform: rotate(-15deg);
+  }
+  100% {
+    transform: rotate(15deg);
+  }
+}

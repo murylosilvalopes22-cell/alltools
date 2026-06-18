@@ -1,0 +1,52 @@
+.hero-alert {
+  margin: 40px 0;
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  border-left: 4px solid var(--primary-color);
+}
+
+.alert-icon-wrapper {
+  flex-shrink: 0;
+}
+
+.alert-icon {
+  color: var(--primary-color);
+}
+
+.alert-content h3 {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.alert-content p {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+}
+
+.wip-text {
+  color: var(--wip-color);
+}
+
+.alert-example {
+  background: var(--bg-color);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.badge-example {
+  background: var(--surface-color);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+}
