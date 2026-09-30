@@ -28,24 +28,27 @@ const InfoTributaria = lazy(() => import('./components/InfoTributaria'));
 const PlanilhaTributacao = lazy(() => import('./components/PlanilhaTributacao'));
 const VersoesSistemas = lazy(() => import('./components/VersoesSistemas'));
 const CalculadoraIbsCbs = lazy(() => import('./components/CalculadoraIbsCbs'));
+const CalculadoraSped = lazy(() => import('./components/CalculadoraSped'));
 const EditorEtiquetas = lazy(() => import('./components/EditorEtiquetas'));
 const LeitorXML = lazy(() => import('./components/LeitorXML'));
 const ConversorImagens = lazy(() => import('./components/ConversorImagens'));
 const GestorSysPDV = lazy(() => import('./components/GestorSysPDV'));
 const WelcomeModal = lazy(() => import('./components/WelcomeModal'));
+const Glossario = lazy(() => import('./components/Glossario'));
+const ControleVersoesClientes = lazy(() => import('./components/ControleVersoesClientes'));
 import DevMetricsOverlay from './components/DevMetricsOverlay';
 import GlobalSearch from './components/GlobalSearch';
 import DashboardSettings from './components/DashboardSettings';
 import ThanosEasterEgg from './components/ThanosEasterEgg';
-import Bandeirinhas from './components/Bandeirinhas';
-import Fogueira from './components/Fogueira';
+// import Bandeirinhas from './components/Bandeirinhas';
+// import Fogueira from './components/Fogueira';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { LayoutDashboard, Save, RotateCcw, BarChart3, MessageSquarePlus, LogOut } from 'lucide-react';
+import { LayoutDashboard, Save, RotateCcw, BarChart3, MessageSquarePlus, LogOut, Search } from 'lucide-react';
 import { usePreferences } from './contexts/PreferencesContext';
 import { useAuth } from './contexts/AuthContext';
 import AuthScreen from './components/AuthScreen';
 import { db } from './firebase';
-import { doc, deleteDoc, collection, addDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, deleteDoc, collection, addDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 import './App.css';
 import './components/TaskNotification.css';
 
@@ -91,6 +94,8 @@ function App() {
   const { currentUser, userData, logout } = useAuth();
   const [theme, setTheme] = useState('dark');
   const [activeView, setActiveView] = useState(() => localStorage.getItem('lastActiveView') || 'dashboard');
+  const [activeCategory, setActiveCategory] = useState('Todas');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [isDevMode, setIsDevMode] = useState(() => localStorage.getItem('isDevMode') === 'true');
@@ -98,10 +103,22 @@ function App() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   useEffect(() => {
-    const hidden = localStorage.getItem('hideWelcomeModal');
-    if (!hidden) {
-      setShowWelcomeModal(true);
-    }
+    // Escuta app_content no Firebase
+    const contentRef = doc(db, 'config', 'app_content');
+    const unsubscribe = onSnapshot(contentRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const readVersion = localStorage.getItem('readChangelogVersion');
+        if (data.changelogVersion && readVersion !== data.changelogVersion) {
+          setShowWelcomeModal(true);
+        }
+      } else {
+        // Se nao existir versao, abre se nunca tiver fechado antes (legado)
+        const hidden = localStorage.getItem('hideWelcomeModal');
+        if (!hidden) setShowWelcomeModal(true);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -222,10 +239,13 @@ function App() {
       'onOpenPlanilhaTributacao': () => setActiveView('planilhaTributacao'),
       'onOpenVersoesSistemas': () => setActiveView('versoesSistemas'),
       'onOpenCalculadoraIbsCbs': () => setActiveView('calculadoraIbsCbs'),
+      'onOpenCalculadoraSped': () => setActiveView('calculadoraSped'),
       'onOpenEditorEtiquetas': () => setActiveView('editorEtiquetas'),
       'onOpenLeitorXmlFiscal': () => setActiveView('leitorXmlFiscal'),
       'onOpenConversorImgDoc': () => setActiveView('conversorImgDoc'),
-      'onOpenGestorSysPdv': () => setActiveView('gestorSysPdv')
+      'onOpenGestorSysPdv': () => setActiveView('gestorSysPdv'),
+      'onOpenGlossario': () => setActiveView('glossario'),
+      'onOpenControleVersoesClientes': () => setActiveView('controleVersoesClientes')
     };
 
     if (actionMap[actionKey]) {
@@ -263,12 +283,12 @@ function App() {
   return (
     <MotionConfig reducedMotion={preferences.animationsEnabled ? "never" : "always"}>
       <div className={`spatial-wrapper ${theme} ${!preferences.animationsEnabled ? 'no-animations' : ''}`} data-theme={theme} data-dev-mode={isDevMode}>
-        {preferences.showFestaJunina && activeView === 'dashboard' && (
+        {/* {preferences.showFestaJunina && activeView === 'dashboard' && (
           <>
             <Bandeirinhas />
             <Fogueira />
           </>
-        )}
+        )} */}
         {activeView === 'dashboard' && <DashboardSettings />}
         <div className="top-actions no-print">
           <AnimatePresence>
@@ -295,6 +315,7 @@ function App() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               className="edit-layout-btn glass-panel" 
+              style={{ '--hover-color': 'rgba(59, 130, 246, 0.4)', '--hover-shadow': 'rgba(59, 130, 246, 0.2)' }}
               onClick={() => setShowWelcomeModal(true)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -311,6 +332,7 @@ function App() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               className="edit-layout-btn glass-panel" 
+              style={{ '--hover-color': 'rgba(245, 158, 11, 0.4)', '--hover-shadow': 'rgba(245, 158, 11, 0.2)' }}
               onClick={() => setActiveView('analytics')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -327,6 +349,7 @@ function App() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               className={`edit-layout-btn glass-panel ${isEditing ? 'active' : ''}`} 
+              style={{ '--hover-color': isEditing ? 'rgba(16, 185, 129, 0.4)' : 'rgba(168, 85, 247, 0.4)', '--hover-shadow': isEditing ? 'rgba(16, 185, 129, 0.2)' : 'rgba(168, 85, 247, 0.2)' }}
               onClick={toggleEditMode}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -340,9 +363,9 @@ function App() {
           )}
         </AnimatePresence>
 
-          <GlobalSearch onAction={handleToolAction} />
+
           {preferences.showFeedbackButton && <FeedbackButton theme={theme} />}
-          <button className="edit-layout-btn glass-panel" onClick={logout} style={{ marginLeft: '10px' }} title="Sair da Conta">
+          <button className="edit-layout-btn glass-panel" onClick={logout} style={{ marginLeft: '10px', '--hover-color': 'rgba(239, 68, 68, 0.4)', '--hover-shadow': 'rgba(239, 68, 68, 0.2)' }} title="Sair da Conta">
             <LogOut size={20} className="icon-feedback" style={{ color: '#ef4444' }}/>
           </button>
           <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
@@ -350,7 +373,7 @@ function App() {
       <div className="no-print">
         <BackdropGlow />
         
-        <div style={{ position: 'fixed', top: '20px', left: '20px', zIndex: 1000, display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+        <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 1000, display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
           {!isDevMode && preferences.showNotifications && <TaskNotification />}
           
           <AnimatePresence>
@@ -364,11 +387,31 @@ function App() {
             animate={{ scale: 1 }}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
-            style={{ width: 'fit-content' }}
+            style={{ width: 'fit-content', '--hover-color': 'rgba(59, 130, 246, 0.4)' }}
           >
             <MessageSquarePlus size={20} className="icon-feedback" style={{ color: '#3b82f6' }} />
             <span className="feedback-text" style={{ display: 'inline-block' }}>Novidades</span>
           </motion.button>
+
+          <AnimatePresence>
+            {activeView !== 'dashboard' && (
+              <motion.button 
+                key="global-back-btn"
+                className="task-notification-btn"
+                onClick={() => setActiveView('dashboard')}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0, opacity: 0 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ width: 'fit-content', '--hover-color': 'rgba(239, 68, 68, 0.4)' }}
+                title="Voltar ao Dashboard principal"
+              >
+                <LayoutDashboard size={20} style={{ color: '#ef4444' }} />
+                <span className="feedback-text" style={{ display: 'inline-block' }}>Dashboard</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
         <AnimatePresence>
@@ -406,13 +449,53 @@ function App() {
               key="dashboard"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              transition={{ duration: 0.4 }}
-              style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
             >
-              <BentoGrid 
-                isEditing={isEditing}
-                isDevMode={isDevMode}
+              <div style={{ width: '100%', maxWidth: '1200px', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '20px' }}>
+                {/* Advanced Filter Bar */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {['Todas', 'Fiscal', 'Infra', 'Gestão', 'Utilitários'].map(cat => (
+                      <button 
+                        key={cat}
+                        className={`task-notification-btn ${activeCategory === cat ? 'active' : ''}`}
+                        style={{ 
+                          width: 'fit-content', 
+                          border: activeCategory === cat ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.1)',
+                          background: activeCategory === cat ? 'rgba(168, 85, 247, 0.1)' : 'rgba(0,0,0,0.3)',
+                          color: activeCategory === cat ? '#fff' : '#aaa'
+                        }}
+                        onClick={() => setActiveCategory(cat)}
+                      >
+                        <span className="feedback-text" style={{ display: 'inline-block', margin: 0 }}>{cat}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="task-notification-btn" style={{ flex: '1', minWidth: '250px', maxWidth: '400px', cursor: 'text', background: 'rgba(0,0,0,0.3)' }}>
+                    <Search size={18} style={{ color: '#a855f7' }} />
+                    <input 
+                      type="text"
+                      placeholder="Buscar ferramentas..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{ 
+                        background: 'transparent', 
+                        border: 'none', 
+                        color: '#fff', 
+                        width: '100%', 
+                        outline: 'none', 
+                        fontSize: '1rem',
+                        fontFamily: 'inherit'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <BentoGrid 
+                  isEditing={isEditing}
+                  isDevMode={isDevMode}
+                  activeCategory={activeCategory}
+                  searchQuery={searchQuery}
                 resetTrigger={resetTrigger}
                 onOpenQR={() => setActiveView('qr')} 
                 onOpenImgConv={() => setActiveView('imgConv')}
@@ -433,11 +516,15 @@ function App() {
                 onOpenPlanilhaTributacao={() => setActiveView('planilhaTributacao')}
                 onOpenVersoesSistemas={() => setActiveView('versoesSistemas')}
                 onOpenCalculadoraIbsCbs={() => setActiveView('calculadoraIbsCbs')}
+                onOpenCalculadoraSped={() => setActiveView('calculadoraSped')}
                 onOpenEditorEtiquetas={() => setActiveView('editorEtiquetas')}
                 onOpenLeitorXmlFiscal={() => setActiveView('leitorXmlFiscal')}
                 onOpenConversorImgDoc={() => setActiveView('conversorImgDoc')}
                 onOpenGestorSysPdv={() => setActiveView('gestorSysPdv')}
+                onOpenGlossario={() => setActiveView('glossario')}
+                onOpenControleVersoesClientes={() => setActiveView('controleVersoesClientes')}
               />
+              </div>
             </motion.div>
           ) : activeView === 'qr' ? (
             <QRGenerator key="qr" theme={theme} onBack={() => setActiveView('dashboard')} />
@@ -479,6 +566,8 @@ function App() {
             <VersoesSistemas key="versoesSistemas" onBack={() => setActiveView('dashboard')} />
           ) : activeView === 'calculadoraIbsCbs' ? (
             <CalculadoraIbsCbs key="calculadoraIbsCbs" theme={theme} onBack={() => setActiveView('dashboard')} />
+          ) : activeView === 'calculadoraSped' ? (
+            <CalculadoraSped key="calculadoraSped" theme={theme} onBack={() => setActiveView('dashboard')} />
           ) : activeView === 'editorEtiquetas' ? (
             <EditorEtiquetas key="editorEtiquetas" theme={theme} onBack={() => setActiveView('dashboard')} />
           ) : activeView === 'leitorXmlFiscal' ? (
@@ -487,6 +576,10 @@ function App() {
             <ConversorImagens key="conversorImgDoc" theme={theme} onBack={() => setActiveView('dashboard')} />
           ) : activeView === 'gestorSysPdv' ? (
             <GestorSysPDV key="gestorSysPdv" theme={theme} onBack={() => setActiveView('dashboard')} />
+          ) : activeView === 'glossario' ? (
+            <Glossario key="glossario" theme={theme} onBack={() => setActiveView('dashboard')} />
+          ) : activeView === 'controleVersoesClientes' ? (
+            <ControleVersoesClientes key="controleVersoesClientes" onBack={() => setActiveView('dashboard')} />
           ) : null}
         </AnimatePresence>
       </Suspense>

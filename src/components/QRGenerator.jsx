@@ -4,10 +4,10 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Download, Copy, RefreshCw, ArrowLeft, QrCode } from 'lucide-react';
 import './QRGenerator.css';
 
-const VERSIONS = ['4.10.0.0', '4.9.0.0', '4.8.0.0', '4.7.0.0', '4.5.0.0', '4.3.0.2', '4.3.0.1'];
+const VERSIONS = ['4.12.0.0', '4.11.0.0', '4.10.0.0', '4.9.0.0', '4.8.0.0', '4.7.0.0', '4.5.0.0', '4.3.0.2', '4.3.0.1'];
 
 const QRGenerator = ({ onBack, theme }) => {
-  const [content, setContent] = useState('https://storsistemas.com.br/aplicativos/storpedidos/StorGarcom(4.10.0.0)-release.apk');
+  const [content, setContent] = useState('https://storsistemas.com.br/aplicativos/storpedidos/StorGarcom(4.12.0.0)-release.apk');
   const [isGenerated, setIsGenerated] = useState(true);
   const [copied, setCopied] = useState(false);
   const qrRef = useRef(null);
@@ -56,10 +56,6 @@ const QRGenerator = ({ onBack, theme }) => {
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="qr-wrapper">
         <div className="qr-header">
           <div className="qr-icon-wrapper">

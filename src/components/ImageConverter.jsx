@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Images, UploadCloud, Download, Image as ImageIcon, Settings } from 'lucide-react';
 import './ImageConverter.css';
 
-const FORMATS = ['PNG', 'JPEG', 'WEBP', 'BMP'];
+const FORMATS = ['PNG', 'JPEG', 'WEBP', 'BMP', 'CUR'];
 
 const ImageConverter = ({ onBack, theme }) => {
   const [targetFormat, setTargetFormat] = useState('WEBP');
@@ -16,9 +16,10 @@ const ImageConverter = ({ onBack, theme }) => {
     switch (fmt) {
       case 'JPG':
       case 'JPEG': return 'image/jpeg';
-      case 'PNG': return 'image/png';
       case 'BMP': return 'image/bmp';
       case 'WEBP': return 'image/webp';
+      case 'CUR': return 'image/png'; // We generate PNG first to wrap it in a CUR header
+      case 'PNG': 
       default: return 'image/png';
     }
   };
@@ -34,52 +35,96 @@ const ImageConverter = ({ onBack, theme }) => {
   };
 
   const processFiles = (files) => {
-    const newImages = [];
-    
     Array.from(files).forEach((file) => {
-      if (!file.type.startsWith('image/')) return;
+      const isCurOrIco = file.name.toLowerCase().endsWith('.cur') || file.name.toLowerCase().endsWith('.ico');
+      if (!file.type.startsWith('image/') && !isCurOrIco) return;
       
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          
-          if (targetFormat === 'JPEG' || targetFormat === 'BMP') {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const objectUrl = URL.createObjectURL(file);
+      const img = new Image();
+      
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        // CUR sizes ideally should be 32x32, 64x64, 128x128. But we'll just allow original or max 256.
+        if (targetFormat === 'CUR') {
+           if (width > 256 || height > 256) {
+              const ratio = Math.min(256 / width, 256 / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+           }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        
+        if (targetFormat === 'JPEG' || targetFormat === 'BMP') {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const mimeType = formatMimeType(targetFormat);
+        const qual = quality / 100;
+        
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            console.error("Canvas toBlob failed");
+            return;
           }
+
+          let finalBlob = blob;
+          if (targetFormat === 'CUR') {
+             const pngArrayBuffer = await blob.arrayBuffer();
+             const pngData = new Uint8Array(pngArrayBuffer);
+             
+             const header = new Uint8Array(22);
+             const dv = new DataView(header.buffer);
+             
+             dv.setUint16(0, 0, true); // Reserved
+             dv.setUint16(2, 2, true); // Type: 2 for CUR
+             dv.setUint16(4, 1, true); // Image count: 1
+             
+             dv.setUint8(6, width >= 256 ? 0 : width);
+             dv.setUint8(7, height >= 256 ? 0 : height);
+             dv.setUint8(8, 0); // Color count
+             dv.setUint8(9, 0); // Reserved
+             
+             // Hotspot at center for now
+             dv.setUint16(10, Math.floor(width / 2), true); // X Hotspot
+             dv.setUint16(12, Math.floor(height / 2), true); // Y Hotspot
+             
+             dv.setUint32(14, pngData.length, true); // Size
+             dv.setUint32(18, 22, true); // Offset
+             
+             finalBlob = new Blob([header, pngData], { type: 'image/x-icon' });
+          }
+
+          const newImg = {
+            id: Math.random().toString(36).substr(2, 9),
+            name: file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat.toLowerCase()}`,
+            originalSize: file.size,
+            newSize: finalBlob.size,
+            originalType: file.type,
+            format: targetFormat,
+            url: URL.createObjectURL(finalBlob),
+            previewUrl: objectUrl
+          };
           
-          ctx.drawImage(img, 0, 0);
-          
-          const mimeType = formatMimeType(targetFormat);
-          const qual = quality / 100;
-          
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              console.error("Canvas toBlob failed");
-              return;
-            }
-            const newImg = {
-              id: Math.random().toString(36).substr(2, 9),
-              name: file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat.toLowerCase()}`,
-              originalSize: file.size,
-              newSize: blob.size,
-              originalType: file.type,
-              format: targetFormat,
-              url: URL.createObjectURL(blob),
-              previewUrl: e.target.result
-            };
-            
-            setImages((prev) => [...prev, newImg]);
-          }, mimeType, qual);
-        };
-        img.src = e.target.result;
+          setImages((prev) => [...prev, newImg]);
+        }, mimeType, qual);
       };
-      reader.readAsDataURL(file);
+      
+      img.onerror = () => {
+         console.error("Failed to load image", file.name);
+         // Fallback if browser can't decode CUR directly in an Image tag.
+         // Most modern browsers CAN decode CUR/ICO if provided via ObjectURL.
+      };
+      
+      img.src = objectUrl;
     });
   };
 
@@ -113,10 +158,6 @@ const ImageConverter = ({ onBack, theme }) => {
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="img-wrapper">
         <div className="img-header">
           <div className="img-icon-wrapper">
@@ -179,7 +220,7 @@ const ImageConverter = ({ onBack, theme }) => {
               <input 
                 type="file" 
                 multiple 
-                accept="image/*" 
+                accept="image/*,.cur,.ico" 
                 ref={fileInputRef} 
                 onChange={handleFileInput} 
                 className="hidden-input" 
@@ -190,7 +231,7 @@ const ImageConverter = ({ onBack, theme }) => {
                 </div>
                 <h4>Arraste imagens para cá</h4>
                 <p>ou clique para selecionar arquivos</p>
-                <span>Suporta JPG, PNG, WEBP, BMP, etc</span>
+                <span>Suporta JPG, PNG, WEBP, BMP, CUR, etc</span>
               </div>
             </div>
           </div>

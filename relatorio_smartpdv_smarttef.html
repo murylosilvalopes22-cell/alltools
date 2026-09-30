@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relatório — SmartPDV &amp; SmartTEF Ativos (Não Vencidos)</title>
+<style>
+  :root{
+    --azul:#0f4c81; --azul-claro:#eaf2fa; --verde:#1e7e34; --verde-bg:#e6f4ea;
+    --ambar:#b45309; --ambar-bg:#fef3c7; --cinza:#6b7280; --borda:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
+  header{background:linear-gradient(135deg,var(--azul),#123a5e);color:#fff;padding:28px 32px}
+  header h1{margin:0 0 6px;font-size:1.5rem}
+  header p{margin:0;opacity:.85;font-size:.92rem}
+  main{max-width:1200px;margin:-18px auto 40px;padding:0 16px}
+  .cards{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .card{flex:1;min-width:170px;background:#fff;border-radius:10px;padding:16px 18px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .card .num{font-size:1.7rem;font-weight:700;color:var(--azul)}
+  .card .lbl{font-size:.8rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  #busca{flex:1;min-width:240px;padding:10px 14px;border:1px solid var(--borda);border-radius:8px;font-size:.95rem}
+  button{padding:10px 16px;border:none;border-radius:8px;background:var(--azul);color:#fff;font-size:.9rem;cursor:pointer}
+  button:hover{filter:brightness(1.1)}
+  .table-wrap{background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.88rem}
+  th{background:var(--azul-claro);color:var(--azul);text-align:left;padding:12px 14px;cursor:pointer;user-select:none;white-space:nowrap;border-bottom:2px solid var(--borda)}
+  th:hover{background:#dcebf7}
+  td{padding:10px 14px;border-bottom:1px solid var(--borda)}
+  tr:nth-child(even) td{background:#fafbfc}
+  tr:hover td{background:#f0f7fd}
+  td.num{text-align:center;font-variant-numeric:tabular-nums}
+  .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.72rem;font-weight:600}
+  .b-ok{background:var(--verde-bg);color:var(--verde)}
+  .b-alerta{background:var(--ambar-bg);color:var(--ambar)}
+  .b-interno{background:#ede9fe;color:#5b21b6}
+  .b-info{background:#e0f2fe;color:#075985}
+  footer{max-width:1200px;margin:0 auto 30px;padding:0 16px;color:var(--cinza);font-size:.78rem;line-height:1.5}
+  @media print{header{-webkit-print-color-adjust:exact}button,.toolbar{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<header>
+  <h1>📊 Relatório de Clientes — Recursos SmartPDV &amp; SmartTEF</h1>
+  <p>Licenças <b>ativas e não vencidas</b> • Exibindo o <b>nome fantasia</b> do cliente • Banco Desk • Gerado em 25/08/2026</p>
+</header>
+<main>
+  <div class="cards">
+    <div class="card"><div class="num">54</div><div class="lbl">Licenças não vencidas</div></div>
+    <div class="card"><div class="num">54</div><div class="lbl">Clientes (nome fantasia)</div></div>
+    <div class="card"><div class="num">120</div><div class="lbl">Licenças SmartPDV</div></div>
+    <div class="card"><div class="num">124</div><div class="lbl">Licenças SmartTEF</div></div>
+    <div class="card"><div class="num">1</div><div class="lbl">Sem versão informada</div></div>
+  </div>
+  <div class="toolbar">
+    <input id="busca" type="search" placeholder="🔎 Filtrar por cliente, nº da licença ou versão...">
+    <span id="contador" style="color:var(--cinza);font-size:.85rem"></span>
+    <button onclick="window.print()">🖨 Imprimir / PDF</button>
+  </div>
+  <div class="table-wrap">
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th data-k="lic">Nº Licença</th>
+          <th data-k="cliente">Cliente</th>
+          <th data-k="versao">Versão (Servidor)</th>
+          <th data-k="pdv">SmartPDV (qtde)</th>
+          <th data-k="tef">SmartTEF (qtde)</th>
+          <th data-k="valide">Validade</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</main>
+<footer>
+  <b>Critérios:</b> recursos STOR SMARTPDV (cód. 96) e STOR SMARTTEF (cód. 90) com situação ATIVA
+  (<code>RL_ATIVO='S'</code>) e validade &gt;= 25/08/2026; clientes com situação ativa.
+  Cliente exibido pelo <b>NOME FANTASIA</b> (<code>CLI_NOMEFANTASIA</code>; quando não informado, usa a razão social).
+  Licenças do cliente interno (STOR SISTEMAS LTDA) foram <b>excluídas</b> deste relatório.
+  Versão obtida do servidor principal do cliente (tabela SERVIDOR — prioriza <code>SRV_PRINCIPAL='S'</code> e o registro mais recente).
+  <br><b>Legenda:</b>
+  <span class="badge b-alerta">Vence em breve</span> validade até 07/09/2026 •
+  <span class="badge b-info">Sem versão</span> nenhum servidor registrado para a licença.
+</footer>
+<script>
+const DADOS=[
+{lic:1015,cliente:"ACAI EXPRESSO",versao:"04.09.02.02",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:2162,cliente:"AGRO PET TANGARA",versao:"04.09.02.02",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:1743,cliente:"BALNEARIO RIO VERDE",versao:"04.12.00.00",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:1594,cliente:"BOTECO DO BODEGA (TGA)",versao:"04.11.02.00",pdv:3,tef:3,valide:"2026-09-10"},
+{lic:2693,cliente:"BPA DISTRIBUIDORA E CONVENIENCIA",versao:"04.11.04.00",pdv:1,tef:1,valide:"2026-09-23"},
+{lic:2668,cliente:"BRAGA VEICULOS",versao:"04.11.04.00",pdv:1,tef:1,valide:"2026-09-18"},
+{lic:2602,cliente:"BRAVO'S COUNTRY",versao:"04.08.01.00",pdv:1,tef:1,valide:"2026-09-21"},
+{lic:2396,cliente:"CAFE & RESENHA PADARIA",versao:"04.09.05.05",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:2584,cliente:"CNP GRILL ( CHURRASCARIA CASTOR )",versao:"04.09.02.02",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:2158,cliente:"CONVENIENCIA ROTA 242",versao:"04.11.02.00",pdv:1,tef:1,valide:"2026-09-10"},
+{lic:2622,cliente:"CUPIM BRASIL  (TGA)",versao:"04.12.00.00",pdv:3,tef:3,valide:"2026-09-10"},
+{lic:2542,cliente:"DELICIAS DA MARY",versao:"04.07.01.01",pdv:1,tef:1,valide:"2026-09-21"},
+{lic:2612,cliente:"DELLAS BEAUTY",versao:"04.09.01.02",pdv:1,tef:1,valide:"2026-09-15"},
+{lic:2529,cliente:"DISTRIBUIDORA TERRA SECA",versao:"04.11.05.00",pdv:2,tef:2,valide:"2026-09-21"},
+{lic:429,cliente:"DOD'S SORVETES",versao:"04.09.02.02",pdv:3,tef:3,valide:"2026-09-10"},
+{lic:861,cliente:"DOM JOSE",versao:"04.07.01.01",pdv:3,tef:3,valide:"2026-09-15"},
+{lic:2464,cliente:"DUPLAST VARIEDADES LTDA",versao:"04.11.02.00",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:2659,cliente:"EDU BOLOS PAES E DOCES  (NOVO)",versao:"04.11.00.00",pdv:4,tef:4,valide:"2026-09-08"},
+{lic:2579,cliente:"EMPORIO MERLO",versao:"04.11.01.00",pdv:2,tef:2,valide:"2026-09-23"},
+{lic:2696,cliente:"FOOD PIZZA DELIVERY TGA",versao:"04.12.00.00",pdv:1,tef:1,valide:"2026-09-28"},
+{lic:2637,cliente:"GIRASSOL PIZZARIA LRV",versao:"04.10.01.01",pdv:1,tef:1,valide:"2026-09-08"},
+{lic:2479,cliente:"GOYANUS RESTAURANTE",versao:"04.06.02.00",pdv:4,tef:4,valide:"2026-09-10"},
+{lic:2700,cliente:"H M PAO & CIA",versao:"04.11.04.00",pdv:1,tef:1,valide:"2026-09-01"},
+{lic:2591,cliente:"HOME CORTINAS",versao:"04.11.01.00",pdv:1,tef:1,valide:"2026-09-10"},
+{lic:620,cliente:"HOT CHEDDAR'S",versao:"04.11.02.00",pdv:7,tef:7,valide:"2026-09-10"},
+{lic:2387,cliente:"JOSUEL GAS",versao:"04.10.01.01",pdv:3,tef:3,valide:"2026-09-21"},
+{lic:2544,cliente:"LA BELLA PIZZARIA",versao:"04.11.02.00",pdv:4,tef:4,valide:"2026-12-28"},
+{lic:2675,cliente:"LOJA COIMBRA",versao:"04.11.00.00",pdv:1,tef:1,valide:"2026-09-08"},
+{lic:402,cliente:"LOJA MODELO",versao:"04.11.05.00",pdv:1,tef:1,valide:"2026-09-10"},
+{lic:2604,cliente:"MAGIA DO 7",versao:"04.11.04.00",pdv:1,tef:1,valide:"2026-09-21"},
+{lic:2403,cliente:"MARMITARIA VITORIA",versao:"04.11.04.00",pdv:5,tef:5,valide:"2026-09-21"},
+{lic:1623,cliente:"MARTCHELLO PIZZARIA",versao:"04.04.00.00",pdv:3,tef:3,valide:"2026-09-10"},
+{lic:2723,cliente:"MARTCHELLO PIZZARIA  (NOVO)",versao:null,pdv:1,tef:3,valide:"2026-10-10"},
+{lic:2442,cliente:"MERCADINHO SÃO JOSÉ - FILIAL",versao:"04.06.02.00",pdv:1,tef:1,valide:"2026-09-21"},
+{lic:2507,cliente:"MERCADO E CONVENIENCIA SILVERIO",versao:"04.11.00.00",pdv:1,tef:1,valide:"2026-09-21"},
+{lic:2433,cliente:"MERCADO E CONVENIÊNCIA SILVÉRIO",versao:"04.11.03.00",pdv:1,tef:1,valide:"2026-09-21"},
+{lic:2400,cliente:"MERCADO POPULAR",versao:"04.11.04.00",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:2369,cliente:"NUTRI PÃO",versao:"04.11.02.00",pdv:1,tef:1,valide:"2026-09-10"},
+{lic:1203,cliente:"PALATARE",versao:"04.09.02.02",pdv:4,tef:4,valide:"2026-09-10"},
+{lic:2656,cliente:"PALMEIRAS GAS",versao:"04.12.00.00",pdv:2,tef:2,valide:"2026-09-14"},
+{lic:173,cliente:"PANIFICADORA CITY PAO",versao:"04.11.03.00",pdv:1,tef:1,valide:"2026-09-10"},
+{lic:2364,cliente:"PANIFICADORA TRIGO BOM (VILA ALTA NOVA)",versao:"04.04.00.01",pdv:1,tef:1,valide:"2026-09-10"},
+{lic:2111,cliente:"PIZZARIA GIRASSOL",versao:"04.11.04.00",pdv:1,tef:1,valide:"2026-09-15"},
+{lic:2652,cliente:"PIZZARIA GIRASSOL SPZ (NOVA)",versao:"04.11.00.00",pdv:4,tef:4,valide:"2026-09-08"},
+{lic:2568,cliente:"POR DO SOL PESQUE & CIA",versao:"04.09.02.02",pdv:1,tef:1,valide:"2026-09-15"},
+{lic:2697,cliente:"REI DA CERVEJA",versao:"04.11.04.00",pdv:1,tef:3,valide:"2026-09-10"},
+{lic:2589,cliente:"RODRIGU'S GRILL DELIVERY (NOVO)",versao:"04.07.00.00",pdv:2,tef:2,valide:"2026-09-21"},
+{lic:2681,cliente:"SALTO DAS NUVENS EVENTOS",versao:"04.12.01.00",pdv:10,tef:10,valide:"2026-09-10"},
+{lic:2346,cliente:"SALVE MAKE",versao:"04.03.02.00",pdv:2,tef:2,valide:"2026-09-15"},
+{lic:2580,cliente:"SORVETERIA DOCE MAGIA (NOVO)",versao:"04.07.01.01",pdv:2,tef:2,valide:"2026-09-21"},
+{lic:2556,cliente:"TRIGO BOM PANIFICADORA  (AV BRASIL)",versao:"04.11.02.00",pdv:2,tef:2,valide:"2026-09-10"},
+{lic:2655,cliente:"VASELI COMERCIO DE BEBIDAS E GAS",versao:"04.12.00.00",pdv:2,tef:2,valide:"2026-09-14"},
+{lic:2654,cliente:"ZAAZ GAS E BEBIDAS",versao:"04.12.00.00",pdv:3,tef:3,valide:"2026-09-14"},
+{lic:1502,cliente:"ZUMA COZINHA ORIENTAL",versao:"04.11.04.00",pdv:4,tef:4,valide:"2026-09-10"}
+];
+const fmt=d=>{if(!d)return'-';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0];};
+const limite=new Date('2026-09-07');
+function render(){
+  const f=document.getElementById('busca').value.toLowerCase().trim();
+  const tb=document.querySelector('#tabela tbody');tb.innerHTML='';
+  let n=0;
+  for(const r of DADOS){
+    const texto=(r.cliente+' '+r.lic+' '+(r.versao||'')).toLowerCase();
+    if(f&&!texto.includes(f))continue;
+    n++;
+    const vd=new Date(r.valide);
+    const badgeVal=vd<=limite?'<span class="badge b-alerta">Vence em breve</span>':'<span class="badge b-ok">Vigente</span>';
+    const ver=r.versao===null?'<span class="badge b-info">Sem versão</span>':r.versao;
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td>'+r.lic+'</td><td>'+r.cliente+'</td><td>'+ver+'</td><td class="num">'+r.pdv+
+      '</td><td class="num">'+r.tef+'</td><td>'+fmt(r.valide)+' '+badgeVal+'</td>';
+    tb.appendChild(tr);
+  }
+  document.getElementById('contador').textContent=n+' de '+DADOS.length+' licenças';
+}
+document.getElementById('busca').addEventListener('input',render);
+document.querySelectorAll('th').forEach(th=>th.addEventListener('click',()=>{
+  const k=th.dataset.k;
+  DADOS.sort((a,b)=>{
+    const x=a[k]===null?'':a[k],y=b[k]===null?'':b[k];
+    return typeof x==='number'?x-y:String(x).localeCompare(String(y),'pt-BR');
+  });
+  render();
+}));
+render();
+
+</script>
+
+</body>
+</html>

@@ -170,9 +170,6 @@ const PlanilhaTributacao = ({ onBack }) => {
       transition={{ duration: 0.4 }}
     >
       <div className="tributacao-header">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> Voltar ao Dashboard
-        </button>
         <h2><FileSpreadsheet size={24} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '8px' }}/> Visualizador de Tributação</h2>
       </div>
 

@@ -31,11 +31,21 @@ const GlobalSearch = ({ onAction }) => {
 
   const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
+  const fuzzyMatch = (str, q) => {
+    let i = 0, j = 0;
+    while (i < str.length && j < q.length) {
+      if (str[i] === q[j]) j++;
+      i++;
+    }
+    return j === q.length;
+  };
+
   const normalizedQuery = normalize(query);
-  const filteredTools = AVAILABLE_TOOLS.filter(tool => 
-    normalize(tool.title).includes(normalizedQuery) || 
-    normalize(tool.desc).includes(normalizedQuery)
-  );
+  const filteredTools = AVAILABLE_TOOLS.filter(tool => {
+    const title = normalize(tool.title);
+    const desc = normalize(tool.desc);
+    return title.includes(normalizedQuery) || desc.includes(normalizedQuery) || fuzzyMatch(title, normalizedQuery);
+  });
 
   const handleSelect = (tool) => {
     if (onAction) {

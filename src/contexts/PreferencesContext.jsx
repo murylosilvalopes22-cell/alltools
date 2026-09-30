@@ -13,7 +13,6 @@ export const PreferencesProvider = ({ children }) => {
         // Ensure new properties exist even if loading old state
         return {
           animationsEnabled: parsed.animationsEnabled ?? true,
-          showUpdateLog: parsed.showUpdateLog ?? true,
           showFeedbackButton: parsed.showFeedbackButton ?? true,
           showNotifications: parsed.showNotifications ?? true,
           showFestaJunina: parsed.showFestaJunina ?? true
@@ -24,7 +23,6 @@ export const PreferencesProvider = ({ children }) => {
     }
     return {
       animationsEnabled: true,
-      showUpdateLog: true,
       showFeedbackButton: true,
       showNotifications: true,
       showFestaJunina: true
@@ -36,7 +34,6 @@ export const PreferencesProvider = ({ children }) => {
   }, [preferences]);
 
   const toggleAnimation = () => setPreferences(prev => ({ ...prev, animationsEnabled: !prev.animationsEnabled }));
-  const toggleUpdateLog = () => setPreferences(prev => ({ ...prev, showUpdateLog: !prev.showUpdateLog }));
   const toggleFeedbackButton = () => setPreferences(prev => ({ ...prev, showFeedbackButton: !prev.showFeedbackButton }));
   const toggleNotifications = () => setPreferences(prev => ({ ...prev, showNotifications: !prev.showNotifications }));
   const toggleFestaJunina = () => setPreferences(prev => ({ ...prev, showFestaJunina: !prev.showFestaJunina }));
@@ -45,7 +42,6 @@ export const PreferencesProvider = ({ children }) => {
     <PreferencesContext.Provider value={{ 
       preferences, 
       toggleAnimation, 
-      toggleUpdateLog,
       toggleFeedbackButton,
       toggleNotifications,
       toggleFestaJunina

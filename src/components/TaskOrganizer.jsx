@@ -311,10 +311,7 @@ const TaskOrganizer = ({ theme, onBack }) => {
         transition={{ duration: 0.5 }}
       >
         <div className="profile-header-actions">
-          <button className="back-btn" onClick={onBack}>
-            <ArrowLeft size={18} /> Dashboard
-          </button>
-        </div>
+          </div>
 
         <div className="profile-selection-content">
           <motion.h1 
@@ -461,10 +458,7 @@ const TaskOrganizer = ({ theme, onBack }) => {
           <button className="back-btn" onClick={() => setViewMode('profiles')}>
             <ArrowLeft size={18} /> Trocar Perfil
           </button>
-          <button className="back-btn" onClick={onBack} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
-            <LogOut size={18} /> Dashboard
-          </button>
-        </div>
+          </div>
       </div>
 
       {columns.length > 0 && (

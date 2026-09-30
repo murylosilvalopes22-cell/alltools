@@ -255,10 +255,6 @@ const GestorSysPDV = ({ onBack, theme }) => {
       transition={{ duration: 0.4 }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> Voltar ao Dashboard
-        </button>
-        
         <a href="https://versoes.syspdv.com.br/" target="_blank" rel="noopener noreferrer" className="btn-info no-print">
           <ExternalLink size={16} /> Consultar Versões SysPDV
         </a>

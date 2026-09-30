@@ -151,9 +151,6 @@ const VersoesSistemas = ({ onBack }) => {
       transition={{ duration: 0.4 }}
     >
       <div className="versoes-header">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> Voltar ao Dashboard
-        </button>
         <h2><Server size={24} style={{ display: 'inline', verticalAlign: 'text-bottom', marginRight: '8px' }}/> Consulta de Sistemas</h2>
       </div>
 

@@ -96,10 +96,6 @@ const UpdateBoard = ({ onBack, theme }) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="tabs-nav">
         <button 
           className={`tab-btn ${activeTab === 'ativos' ? 'active' : ''}`}

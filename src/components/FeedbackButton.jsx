@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquarePlus, X, Send, Loader2 } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
 import './FeedbackButton.css';
 
 const MODULES = [
@@ -21,6 +22,7 @@ const MODULES = [
 ];
 
 const FeedbackButton = ({ theme }) => {
+  const { userData } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -28,8 +30,7 @@ const FeedbackButton = ({ theme }) => {
     modulo: 'Dashboard (Geral)',
     outroModulo: '',
     tipo: 'Sugestão de Melhoria',
-    observacoes: '',
-    solicitante: ''
+    observacoes: ''
   });
 
   const handleChange = (e) => {
@@ -39,10 +40,6 @@ const FeedbackButton = ({ theme }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.solicitante.trim()) {
-      alert("Por favor, preencha o seu nome (solicitante).");
-      return;
-    }
     if (!formData.observacoes.trim()) {
       alert("Por favor, preencha o campo de observações.");
       return;
@@ -51,7 +48,7 @@ const FeedbackButton = ({ theme }) => {
     setIsSubmitting(true);
 
     const recordData = {
-      solicitante: formData.solicitante,
+      solicitante: userData?.nome || 'Usuário Desconhecido',
       modulo: formData.modulo === 'Outro' ? formData.outroModulo : formData.modulo,
       tipo: formData.tipo,
       observacoes_usuario: formData.observacoes,
@@ -72,8 +69,7 @@ const FeedbackButton = ({ theme }) => {
           modulo: 'Dashboard (Geral)',
           outroModulo: '',
           tipo: 'Sugestão de Melhoria',
-          observacoes: '',
-          solicitante: ''
+          observacoes: ''
         });
       }, 2000);
     } catch (error) {
@@ -131,18 +127,6 @@ const FeedbackButton = ({ theme }) => {
               ) : (
                 <form onSubmit={handleSubmit} className="feedback-form">
                   <div className="form-row">
-                    <div className="input-group">
-                      <label>Seu Nome</label>
-                      <input 
-                        type="text" 
-                        name="solicitante" 
-                        value={formData.solicitante} 
-                        onChange={handleChange} 
-                        placeholder="Ex: João Silva"
-                        disabled={isSubmitting}
-                        required
-                      />
-                    </div>
                     <div className="input-group">
                       <label>Tipo de Solicitação</label>
                       <select name="tipo" value={formData.tipo} onChange={handleChange} disabled={isSubmitting}>

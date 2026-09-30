@@ -14,10 +14,6 @@ const DownloadAnydesk = ({ onBack, theme }) => {
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="anydesk-wrapper">
         <div className="anydesk-header">
           <div className="anydesk-icon-wrapper">

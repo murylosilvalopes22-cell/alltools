@@ -12,7 +12,8 @@ import {
   Home, 
   FileCheck,
   ExternalLink,
-  HelpCircle
+  HelpCircle,
+  LifeBuoy
 } from 'lucide-react';
 import './UsefulLinks.css';
 
@@ -83,6 +84,12 @@ const UsefulLinks = ({ onBack, theme }) => {
       desc: "Suporte e Ajuda",
       url: "https://ola.meajuda.cc/",
       icon: <HelpCircle size={24} />
+    },
+    {
+      title: "Ajuda Stor Sistemas",
+      desc: "Portal de Ajuda Stor",
+      url: "https://ajuda.storsistemas.com.br:88",
+      icon: <LifeBuoy size={24} />
     }
   ];
 
@@ -94,10 +101,6 @@ const UsefulLinks = ({ onBack, theme }) => {
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="links-wrapper">
         <div className="links-header">
           <div className="links-icon-wrapper">

@@ -144,6 +144,7 @@ const TaskNotification = () => {
           animate={{ scale: 1 }}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.95 }}
+          style={{ '--hover-color': 'rgba(6, 182, 212, 0.4)' }}
         >
           <Bell size={20} className="icon-feedback" style={{ color: 'var(--neon-cyan)' }} />
           <span className="feedback-text" style={{ display: 'inline-block' }}>Tarefas</span>

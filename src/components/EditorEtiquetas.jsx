@@ -589,9 +589,6 @@ const EditorEtiquetas = ({ onBack, theme }) => {
       </div>
       <div className="editor-toolbar">
         <div className="toolbar-group">
-          <button className="btn-secondary" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <ArrowLeft size={18} /> Voltar
-          </button>
           <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 10px' }} />
           
           <div className="dropdown-container" style={{ position: 'relative' }}>

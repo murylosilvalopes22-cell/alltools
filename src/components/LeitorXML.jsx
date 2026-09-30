@@ -141,10 +141,6 @@ const LeitorXML = ({ onBack }) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <button className="back-btn" onClick={onBack} style={{ alignSelf: 'flex-start' }}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="leitor-header">
         <div>
           <h1><FileCode2 className="icon" size={32} color="#38bdf8" /> Leitor XML Fiscal</h1>

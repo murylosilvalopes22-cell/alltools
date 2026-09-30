@@ -6,7 +6,7 @@ import './DashboardSettings.css';
 
 const DashboardSettings = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { preferences, toggleAnimation, toggleUpdateLog, toggleFeedbackButton, toggleNotifications, toggleFestaJunina } = usePreferences();
+  const { preferences, toggleAnimation, toggleFeedbackButton, toggleNotifications, toggleFestaJunina } = usePreferences();
   const dropdownRef = useRef(null);
 
   // Close when clicking outside
@@ -64,21 +64,6 @@ const DashboardSettings = () => {
 
             <div className="setting-item">
               <div className="setting-info">
-                <span>Log de Atualizações</span>
-                <small>Mostra banner de notas de versão</small>
-              </div>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={preferences.showUpdateLog} 
-                  onChange={toggleUpdateLog} 
-                />
-                <span className="slider round"></span>
-              </label>
-            </div>
-
-            <div className="setting-item">
-              <div className="setting-info">
                 <span>Botão de Solicitações</span>
                 <small>Mostrar botão no topo (Feedback)</small>
               </div>
@@ -107,7 +92,7 @@ const DashboardSettings = () => {
               </label>
             </div>
 
-            <div className="setting-item">
+            {/* <div className="setting-item">
               <div className="setting-info">
                 <span>Tema Festa Junina</span>
                 <small>Bandeirinhas e Fogueira</small>
@@ -120,7 +105,7 @@ const DashboardSettings = () => {
                 />
                 <span className="slider round"></span>
               </label>
-            </div>
+            </div> */}
 
           </motion.div>
         )}

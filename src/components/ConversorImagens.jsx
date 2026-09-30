@@ -198,10 +198,6 @@ const ConversorImagens = ({ onBack }) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <button className="back-btn" onClick={onBack} style={{ alignSelf: 'flex-start' }}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="conversor-header">
         <div>
           <h1><Images className="icon" size={32} color="#a855f7" /> Conversor de Imagens (A4)</h1>

@@ -145,10 +145,6 @@ const FeedbackBoard = ({ onBack, theme }) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="board-header" style={{ padding: 0, background: 'none', border: 'none', marginBottom: '12px' }}>
         <h1 style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.8rem' }}>
           <MessageSquarePlus className="icon" size={28} color="var(--primary)" /> 

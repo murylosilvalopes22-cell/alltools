@@ -157,9 +157,6 @@ const CalculadoraIbsCbs = ({ onBack, theme }) => {
       transition={{ duration: 0.4 }}
     >
       <div className="calc-header">
-        <button className="btn-secondary" onClick={onBack}>
-          <ArrowLeft size={18} /> Voltar ao Dashboard
-        </button>
         <h2><Calculator size={28} /> Calculadora CBS/IBS</h2>
         <button className="btn-primary" onClick={() => setShowDbModal(true)}>
           <Database size={18} /> Tabela cClassTrib

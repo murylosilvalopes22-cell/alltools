@@ -225,10 +225,6 @@ const StationConfig = ({ onBack, theme }) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="print-area" ref={printAreaRef} style={{ display: 'none' }}></div>
 
       <div className="tabs-nav no-print">

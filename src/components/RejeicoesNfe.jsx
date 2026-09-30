@@ -29,10 +29,7 @@ const RejeicoesNfe = ({ onBack, theme }) => {
           <BookOpen className="rejeicoes-icon" size={32} />
           Manual de Rejeições NF-e
         </h1>
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> Voltar ao Dashboard
-        </button>
-      </div>
+        </div>
 
       <div className="rejeicoes-content">
         <div className="search-bar-container">

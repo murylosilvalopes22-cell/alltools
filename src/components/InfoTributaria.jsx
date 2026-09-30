@@ -81,9 +81,6 @@ const InfoTributaria = ({ onBack }) => {
       transition={{ duration: 0.4 }}
     >
       <div className="tax-header">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> Voltar ao Dashboard
-        </button>
         <div className="warning-banner">
           <AlertTriangle size={24} />
           <span>SEMPRE ORIENTAR CLIENTE A VALIDAR COM CONTABILIDADE</span>

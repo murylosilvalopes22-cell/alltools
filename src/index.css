@@ -523,3 +523,31 @@ a {
 .no-animations .bento-card:hover img {
   transform: none !important;
 }
+
+.category-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.category-pills .pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ccc;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.category-pills .pill:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.category-pills .pill.active {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: #a855f7;
+  color: white;
+}

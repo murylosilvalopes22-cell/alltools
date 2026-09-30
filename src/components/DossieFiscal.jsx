@@ -162,10 +162,7 @@ const DossieFiscal = ({ onBack, theme }) => {
   return (
     <div className={`dossie-container ${theme}`}>
       <div className="dossie-header-row">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={20} /> Voltar
-        </button>
-      </div>
+        </div>
 
       <div className="dossie-content">
         <div className="dossie-title-area">

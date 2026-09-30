@@ -141,9 +141,6 @@ const AnalyticsDashboard = ({ onBack, theme }) => {
     >
       <div className="analytics-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={onBack} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-main)', border: '1px solid var(--border-light)', borderRadius: '12px', width: '48px', height: '48px', cursor: 'pointer', color: 'var(--text-primary)', transition: 'all 0.2s' }}>
-            <ArrowLeft size={24} />
-          </button>
           <h1 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.8rem' }}>
             <BarChart3 size={28} color="#a855f7" /> Estatísticas de Uso
           </h1>

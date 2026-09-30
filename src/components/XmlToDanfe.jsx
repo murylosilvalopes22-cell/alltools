@@ -128,10 +128,7 @@ const XmlToDanfe = ({ onBack, theme }) => {
           <FileCode2 className="danfe-header-icon" size={32} />
           XML Para PDF
         </h1>
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={18} /> Voltar ao Dashboard
-        </button>
-      </div>
+        </div>
 
       <div className="danfe-content">
         <AnimatePresence mode="wait">

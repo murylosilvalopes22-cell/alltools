@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Lightbulb, Plus, CheckCircle2, Circle, 
-  Trash2, User, Clock, ChevronRight, Edit2, Save, X, Pin, Printer, Image as ImageIcon, Loader2, Download, XOctagon, Combine
+  Trash2, User, Clock, ChevronRight, Edit2, Save, X, Pin, Printer, Image as ImageIcon, Loader2, Download, XOctagon, Combine, CheckCheck, MessageSquareCode
 } from 'lucide-react';
 import { collection, onSnapshot, doc, setDoc, updateDoc, deleteDoc, runTransaction, arrayUnion } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -32,6 +32,10 @@ const CaseStudies = ({ onBack, theme }) => {
   // Estados para Mesclagem de Ideias
   const [isMerging, setIsMerging] = useState(false);
   const [selectedMergeIdeas, setSelectedMergeIdeas] = useState([]);
+
+  // Estados para Observação do Desenvolvimento
+  const [obsDevIdeaId, setObsDevIdeaId] = useState(null);
+  const [obsDevText, setObsDevText] = useState('');
 
   useEffect(() => {
     const collRef = collection(db, 'estudos_caso');
@@ -139,6 +143,9 @@ const CaseStudies = ({ onBack, theme }) => {
         imagens: uploadedImages,
         finalizado: false,
         emPauta: false,
+        inviavel: false,
+        viavel: false,
+        obsDesenvolvimento: '',
         criadoEm: Date.now()
       };
 
@@ -299,12 +306,57 @@ const CaseStudies = ({ onBack, theme }) => {
         const currentIdeas = topicDoc.data().ideias || [];
         const updatedIdeas = currentIdeas.map(idea => {
           if (idea.id === ideaId) {
-            return { ...idea, inviavel: !idea.inviavel, finalizado: false }; // desmarca finalizado se for inviável
+            return { ...idea, inviavel: !idea.inviavel, viavel: false, finalizado: false }; // desmarca finalizado se for inviável
           }
           return idea;
         });
         transaction.update(topicRef, { ideias: updatedIdeas });
       });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const toggleIdeaViavel = async (ideaId) => {
+    if (!selectedTopic) return;
+    try {
+      const topicRef = doc(db, 'estudos_caso', selectedTopic.id);
+      await runTransaction(db, async (transaction) => {
+        const topicDoc = await transaction.get(topicRef);
+        if (!topicDoc.exists()) throw "Módulo não encontrado.";
+        
+        const currentIdeas = topicDoc.data().ideias || [];
+        const updatedIdeas = currentIdeas.map(idea => {
+          if (idea.id === ideaId) {
+            return { ...idea, viavel: !idea.viavel, inviavel: false };
+          }
+          return idea;
+        });
+        transaction.update(topicRef, { ideias: updatedIdeas });
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveObsDev = async (ideaId) => {
+    if (!selectedTopic) return;
+    try {
+      const topicRef = doc(db, 'estudos_caso', selectedTopic.id);
+      await runTransaction(db, async (transaction) => {
+        const topicDoc = await transaction.get(topicRef);
+        if (!topicDoc.exists()) throw "Módulo não encontrado.";
+        
+        const currentIdeas = topicDoc.data().ideias || [];
+        const updatedIdeas = currentIdeas.map(idea => {
+          if (idea.id === ideaId) {
+            return { ...idea, obsDesenvolvimento: obsDevText };
+          }
+          return idea;
+        });
+        transaction.update(topicRef, { ideias: updatedIdeas });
+      });
+      setObsDevIdeaId(null);
     } catch (err) {
       console.error(err);
     }
@@ -416,9 +468,15 @@ const CaseStudies = ({ onBack, theme }) => {
                 <div class="idea-item">
                   <div class="idea-text status ${idea.finalizado ? 'finalizado' : ''}">
                     <strong>${idea.emPauta ? '[Em Pauta] ' : ''}</strong>
+                    ${idea.viavel ? '<strong style="color: #10b981;">[VIÁVEL] </strong>' : ''}
                     ${idea.texto}
                     ${idea.finalizado ? ' (Finalizado)' : ''}
                   </div>
+                  ${idea.obsDesenvolvimento ? `
+                    <div style="background: #ecfdf5; padding: 6px 10px; border-left: 3px solid #10b981; margin-top: 6px; font-size: 0.88em; color: #065f46;">
+                      <strong>💻 Obs. Dev:</strong> ${idea.obsDesenvolvimento}
+                    </div>
+                  ` : ''}
                   ${idea.imagens && idea.imagens.length > 0 ? `
                     <div class="images-container">
                       ${idea.imagens.map(img => `<img src="${img.url}" alt="${img.nome}" />`).join('')}
@@ -703,7 +761,7 @@ const CaseStudies = ({ onBack, theme }) => {
               {sortedIdeas.map(idea => (
                 <motion.div 
                   key={idea.id}
-                  className={`idea-card ${idea.finalizado ? 'finalizada' : ''} ${idea.inviavel ? 'inviavel' : ''} ${isMerging && selectedMergeIdeas.includes(idea.id) ? 'selected-merge' : ''}`}
+                  className={`idea-card ${idea.finalizado ? 'finalizada' : ''} ${idea.inviavel ? 'inviavel' : ''} ${idea.viavel ? 'viavel' : ''} ${isMerging && selectedMergeIdeas.includes(idea.id) ? 'selected-merge' : ''}`}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -800,9 +858,19 @@ const CaseStudies = ({ onBack, theme }) => {
                       </div>
                     ) : (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                           {idea.emPauta && !idea.finalizado && (
                             <span className="badge-pauta">Em Pauta</span>
+                          )}
+                          {idea.viavel && (
+                            <span className="badge-viavel" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '3px 10px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              ✅ VIÁVEL — Providenciar dados para solicitação
+                            </span>
+                          )}
+                          {idea.inviavel && (
+                            <span className="badge-inviavel" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '3px 10px', borderRadius: '12px', fontSize: '0.78rem', fontWeight: 600 }}>
+                              🚫 INVIÁVEL
+                            </span>
                           )}
                         </div>
                         <p className="idea-text">{idea.texto}</p>
@@ -839,12 +907,70 @@ const CaseStudies = ({ onBack, theme }) => {
                           <span className="author"><User size={12}/> {idea.autor}</span>
                           <span className="date"><Clock size={12}/> {new Date(idea.criadoEm).toLocaleDateString('pt-BR')}</span>
                         </div>
+
+                        {obsDevIdeaId === idea.id ? (
+                          <div className="obs-dev-editor" style={{ marginTop: '14px', padding: '12px', background: 'rgba(6, 182, 212, 0.08)', border: '1px solid rgba(6, 182, 212, 0.35)', borderRadius: '8px', width: '100%' }} onClick={(e) => e.stopPropagation()}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#06b6d4', fontWeight: 600, fontSize: '0.82rem', marginBottom: '8px' }}>
+                              <MessageSquareCode size={16} /> OBSERVAÇÃO DESENVOLVIMENTO:
+                            </div>
+                            <textarea 
+                              value={obsDevText} 
+                              onChange={(e) => setObsDevText(e.target.value)}
+                              placeholder="Digite o comentário ou observação do desenvolvimento sobre esta ideia..."
+                              rows={3}
+                              style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid var(--border-light)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '0.88rem', fontFamily: 'inherit' }}
+                              autoFocus
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '10px' }}>
+                              <button className="btn-primary small" onClick={(e) => { e.stopPropagation(); handleSaveObsDev(idea.id); }}>
+                                <Save size={14} /> Salvar Observação
+                              </button>
+                              <button className="btn-icon small" onClick={(e) => { e.stopPropagation(); setObsDevIdeaId(null); }}>
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          idea.obsDesenvolvimento && (
+                            <div className="obs-dev-box" style={{ marginTop: '14px', padding: '10px 14px', background: 'rgba(6, 182, 212, 0.08)', borderLeft: '3px solid #06b6d4', borderRadius: '6px', fontSize: '0.88rem', width: '100%' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <strong style={{ color: '#06b6d4', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <MessageSquareCode size={14} /> OBSERVAÇÃO DESENVOLVIMENTO:
+                                </strong>
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setObsDevIdeaId(idea.id); setObsDevText(idea.obsDesenvolvimento || ''); }} 
+                                  style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '2px' }}
+                                  title="Editar observação do desenvolvimento"
+                                >
+                                  <Edit2 size={13} />
+                                </button>
+                              </div>
+                              <p style={{ margin: 0, color: 'var(--text-primary)', whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>{idea.obsDesenvolvimento}</p>
+                            </div>
+                          )
+                        )}
                       </>
                     )}
                   </div>
 
                   {editingIdeaId !== idea.id && (
                     <div className="idea-actions">
+                      <button 
+                        className={`btn-icon ${idea.obsDesenvolvimento ? 'active-pin' : ''}`} 
+                        onClick={(e) => { e.stopPropagation(); setObsDevIdeaId(idea.id); setObsDevText(idea.obsDesenvolvimento || ''); }}
+                        title="Observação Desenvolvimento"
+                        style={idea.obsDesenvolvimento ? { background: 'rgba(6, 182, 212, 0.15)', color: '#06b6d4', borderColor: 'rgba(6, 182, 212, 0.4)' } : undefined}
+                      >
+                        <MessageSquareCode size={16} />
+                      </button>
+                      <button 
+                        className={`btn-icon ${idea.viavel ? 'success' : ''}`} 
+                        onClick={(e) => { e.stopPropagation(); toggleIdeaViavel(idea.id); }}
+                        title={idea.viavel ? "Remover viável" : "Marcar como Viável"}
+                        style={idea.viavel ? { color: '#10b981', borderColor: '#10b981', background: 'rgba(16, 185, 129, 0.15)' } : undefined}
+                      >
+                        <CheckCheck size={16} />
+                      </button>
                       <button 
                         className={`btn-icon ${idea.emPauta ? 'active-pin' : ''}`} 
                         onClick={(e) => { e.stopPropagation(); toggleIdeaPin(idea.id); }}
@@ -979,9 +1105,15 @@ const CaseStudies = ({ onBack, theme }) => {
                     <li>
                       <div class="idea-text">
                         <strong>${idea.emPauta ? '[Em Pauta] ' : ''}</strong>
+                        ${idea.viavel ? '<strong style="color: #10b981;">[VIÁVEL] </strong>' : ''}
                         ${idea.texto}
                         ${idea.finalizado ? ' (Finalizado)' : ''}
                       </div>
+                      ${idea.obsDesenvolvimento ? `
+                        <div style="background: #ecfdf5; padding: 6px 10px; border-left: 3px solid #10b981; margin-top: 6px; font-size: 0.88em; color: #065f46;">
+                          <strong>💻 Obs. Dev:</strong> ${idea.obsDesenvolvimento}
+                        </div>
+                      ` : ''}
                       <div class="idea-meta">
                         Autor: ${idea.autor || 'Desconhecido'} - Data: ${new Date(idea.criadoEm).toLocaleDateString('pt-BR')}
                       </div>
@@ -1027,10 +1159,7 @@ const CaseStudies = ({ onBack, theme }) => {
               <Printer size={18} /> Imprimir Relatório
             </button>
           )}
-          <button className="back-btn" onClick={onBack}>
-            <ArrowLeft size={18} /> Voltar ao Dashboard
-          </button>
-        </div>
+          </div>
       </div>
 
       <div className="cs-content no-print">

@@ -26,7 +26,17 @@ import {
   Calculator,
   Printer,
   MonitorPlay,
-  FileEdit
+  FileEdit,
+  BookA,
+  FileCheck2,
+  ListFilter,
+  Users,
+  ShieldAlert,
+  CheckCircle2,
+  AlertTriangle,
+  Layers,
+  RefreshCw,
+  Search
 } from 'lucide-react';
 import {
   DndContext,
@@ -53,7 +63,7 @@ import './BentoGrid.css';
 import './BentoAnimations.css';
 
 const ICONS = {
-  FileText, BrainCircuit, QrCode, Images, MonitorCog, ServerCog, CalendarClock, Download, DatabaseZap, ListTodo, ClipboardList, MessageSquarePlus, FileCode2, BookOpen, Lightbulb, FileSpreadsheet, Server, Calculator, Printer, MonitorPlay
+  FileText, BrainCircuit, QrCode, Images, MonitorCog, ServerCog, CalendarClock, Download, DatabaseZap, ListTodo, ClipboardList, MessageSquarePlus, FileCode2, BookOpen, Lightbulb, FileSpreadsheet, Server, Calculator, Printer, MonitorPlay, FileEdit, BookA, FileCheck2, ListFilter, Users, ShieldAlert, CheckCircle2, AlertTriangle, Layers, RefreshCw
 };
 
 import { AVAILABLE_TOOLS } from '../data/toolsList';
@@ -150,7 +160,7 @@ const SortableBentoItem = ({ item, isEditing, onRemove, renderToolInner, isLarge
 };
 
 const BentoGrid = (props) => {
-  const { isEditing, resetTrigger } = props;
+  const { isEditing, resetTrigger, activeCategory = 'Todas', searchQuery = '' } = props;
   const [items, setItems] = useState([]);
   const [hiddenItems, setHiddenItems] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -317,7 +327,7 @@ const BentoGrid = (props) => {
   };
 
   const renderToolInner = (item, isLarge) => {
-    const IconComponent = ICONS[item.icon];
+    const IconComponent = ICONS[item?.icon] || FileText;
     const itemProps = {
        ...item,
        onClick: item.type === 'action' || item.type === 'action_custom' ? props[item.actionKey] : undefined
@@ -379,39 +389,34 @@ const BentoGrid = (props) => {
   // The specific indices that are visually large in the grid
   const isLargeIndex = (index) => index === 0 || index === 7 || index === 8;
 
+  const fuzzyMatch = (str, q) => {
+    let i = 0, j = 0;
+    while (i < str.length && j < q.length) {
+      if (str[i] === q[j]) j++;
+      i++;
+    }
+    return j === q.length;
+  };
+
+  const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+  const filteredItems = items.filter(item => {
+    const matchCategory = activeCategory === 'Todas' || item.category === activeCategory;
+    if (!searchQuery) return matchCategory;
+    
+    const title = normalize(item.title);
+    const desc = normalize(item.desc);
+    const normQ = normalize(searchQuery);
+    
+    const matchSearch = title.includes(normQ) || desc.includes(normQ) || fuzzyMatch(title, normQ);
+    return matchCategory && matchSearch;
+  });
+
   return (
     <div className="bento-wrapper">
       <div className={`bento-container ${isEditing ? 'edit-mode-active' : ''}`} style={{ perspective: isEditing ? 'none' : 2000 }}>
         
-        {/* Hero Block (Fixed) */}
-        {preferences.showUpdateLog && appContent && (
-          <BentoCard className="bento-hero">
-            <div className="hero-content">
-              <div className="hero-badge" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Info size={16} /> Update Notes</span>
-                {isDevMode && (
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setShowHeroEditor(true); }}
-                    style={{ background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                    title="Editar Conteúdo"
-                  >
-                    <FileEdit size={16} />
-                  </button>
-                )}
-              </div>
-              <h1>
-                Aplicações Suporte <br/>
-                <span className="text-gradient-primary">{appContent.buildVersion}</span>
-              </h1>
-              <p className="hero-desc" dangerouslySetInnerHTML={{ __html: appContent.heroDesc }}></p>
-              <div className="hero-example">
-                <span className="tag">Destaque</span>
-                <p dangerouslySetInnerHTML={{ __html: appContent.heroHighlight }}></p>
-              </div>
-            </div>
-            <div className="abstract-glow purple-glow" />
-          </BentoCard>
-        )}
+
 
         {/* DND Context for the Grid */}
         <DndContext 
@@ -421,15 +426,15 @@ const BentoGrid = (props) => {
           onDragEnd={handleDragEnd}
         >
           <SortableContext 
-            items={items.map(i => i.id)}
+            items={filteredItems.map(i => i.id)}
             strategy={rectSortingStrategy}
           >
             <AnimatePresence>
-              {items.map((item, index) => (
+              {filteredItems.map((item, index) => (
                 <SortableBentoItem 
                   key={item.id} 
                   item={item} 
-                  isEditing={isEditing} 
+                  isEditing={isEditing && activeCategory === 'Todas'} 
                   isLarge={isLargeIndex(index)}
                   isAnyDragging={activeId !== null}
                   onRemove={() => removeItem(item)}
@@ -444,7 +449,7 @@ const BentoGrid = (props) => {
             {activeId ? (() => {
               const activeItem = items.find(i => i.id === activeId);
               if (!activeItem) return null;
-              const activeIndex = items.findIndex(i => i.id === activeId);
+              const activeIndex = filteredItems.findIndex(i => i.id === activeId);
               const isLarge = isLargeIndex(activeIndex);
               
               return (
@@ -478,7 +483,7 @@ const BentoGrid = (props) => {
           ) : (
             <div className="hidden-tools-list">
               {hiddenItems.map(item => {
-                const IconComp = ICONS[item.icon];
+                const IconComp = ICONS[item?.icon] || FileText;
                 return (
                   <div key={item.id} className="hidden-tool-item">
                     <div className="hidden-tool-info">
@@ -516,13 +521,6 @@ const BentoGrid = (props) => {
         </div>
       </div>
 
-      <ContentEditorModal
-        isOpen={showHeroEditor}
-        onClose={() => setShowHeroEditor(false)}
-        onSave={handleSaveHeroContent}
-        type="hero"
-        initialData={appContent}
-      />
     </div>
   );
 };

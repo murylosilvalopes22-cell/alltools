@@ -18,6 +18,7 @@ const ensureArray = (val) => {
 const DutySchedule = ({ onBack, theme }) => {
   const [selectedMonth, setSelectedMonth] = useState('');
   const [scheduleData, setScheduleData] = useState({});
+  const [retaguardaData, setRetaguardaData] = useState({});
   const [teamMembers, setTeamMembers] = useState([]);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [expandedMember, setExpandedMember] = useState(null);
@@ -70,8 +71,10 @@ const DutySchedule = ({ onBack, theme }) => {
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         setScheduleData(docSnap.data().days || {});
+        setRetaguardaData(docSnap.data().retaguarda || {});
       } else {
         setScheduleData({});
+        setRetaguardaData({});
       }
     });
 
@@ -139,6 +142,26 @@ const DutySchedule = ({ onBack, theme }) => {
       }, { merge: true });
     } catch (err) {
       console.error("Error syncing bulk to Firebase", err);
+    }
+  };
+
+  const handleRetaguardaChange = (day, value) => {
+    setRetaguardaData(prev => ({ ...prev, [day]: value }));
+    syncRetaguardaToFirebase(day, value);
+  };
+
+  const syncRetaguardaToFirebase = async (day, val) => {
+    if(!selectedMonth) return;
+    try {
+      await setDoc(doc(db, 'dutySchedules', selectedMonth), {
+        monthRaw: selectedMonth,
+        retaguarda: {
+          [day]: val
+        },
+        updatedAt: Date.now()
+      }, { merge: true });
+    } catch (err) {
+      console.error("Error syncing retaguarda to Firebase", err);
     }
   };
 
@@ -339,23 +362,29 @@ const DutySchedule = ({ onBack, theme }) => {
           </div>
           <table>
             <tr>
-              <th></th>
-              ${DAYS_OF_WEEK.map(d => `<th>${d}</th>`).join('')}
+              ${DAYS_OF_WEEK.map((d, idx) => {
+                const isWeekend = idx === 0 || idx === 6;
+                return `<th style="${isWeekend ? 'background: #475569 !important;' : ''}">${d}</th>`;
+              }).join('')}
             </tr>
     `;
 
     rows.forEach(row => {
-      html += `<tr><td style="background: #e0e0e0 !important; font-weight: bold; color: #000 !important; width: 80px;">PLANTÃO</td>`;
-      row.forEach(cell => {
+      html += `<tr>`;
+      row.forEach((cell, idx) => {
+        const isWeekend = idx === 0 || idx === 6;
+        const bgStyle = isWeekend ? 'background: #e2e8f0 !important;' : 'background: #ffffff !important;';
         if(!cell) {
-          html += `<td></td>`;
+          html += `<td style="${bgStyle}"></td>`;
         } else {
           const arr = ensureArray(scheduleData[cell.day]);
           const currentPerson = arr[arr.length - 1] || '';
+          const retPerson = retaguardaData[cell.day] || '';
           html += `
-            <td style="vertical-align: top; height: 80px;">
+            <td style="${bgStyle} vertical-align: top; height: 75px;">
               <div class="cell-day">${cell.day}</div>
               <div class="cell-name">${currentPerson}</div>
+              ${retPerson ? `<div style="margin-top: 4px; font-size: 13px; font-weight: 500; color: #475569 !important;">${retPerson}</div>` : ''}
             </td>
           `;
         }
@@ -398,10 +427,6 @@ const DutySchedule = ({ onBack, theme }) => {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4 }}
     >
-      <button className="back-btn" onClick={onBack}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="duty-layout">
         {/* PAINEL LATERAL (EQUIPE) */}
           <div className="duty-sidebar no-print">
@@ -562,16 +587,14 @@ const DutySchedule = ({ onBack, theme }) => {
             <div className="schedule-content">
               {selectedMonth ? (
             <table className="schedule-table">
-              <thead>
+               <thead>
                 <tr>
-                  <th></th>
                   {DAYS_OF_WEEK.map(d => <th key={d}>{d}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {gridRows.map((row, i) => (
                   <tr key={i}>
-                    <td className="tipo">Plantão</td>
                     {row.map((cell, idx) => {
                       if (!cell) return <td key={idx} className="empty-cell"></td>;
                       
@@ -644,6 +667,15 @@ const DutySchedule = ({ onBack, theme }) => {
                                 </button>
                               )}
                             </div>
+                            <input 
+                              type="text"
+                              className="day-input retaguarda-input"
+                              style={{ marginTop: '4px' }}
+                              value={retaguardaData[cell.day] || ''}
+                              onChange={(e) => handleRetaguardaChange(cell.day, e.target.value)}
+                              placeholder="Retaguarda..."
+                              autoComplete="off"
+                            />
                           </div>
                         </td>
                       );

@@ -1,0 +1,539 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { 
+  FileText, 
+  DatabaseZap, 
+  BrainCircuit, 
+  QrCode, 
+  Images, 
+  Download, 
+  Info, 
+  Sparkles, 
+  MonitorCog,
+  ServerCog,
+  CalendarClock,
+  ClipboardList,
+  ListTodo,
+  MessageSquarePlus,
+  GripHorizontal,
+  X,
+  Plus,
+  FileCode2,
+  BookOpen,
+  Lightbulb,
+  FileSpreadsheet,
+  Server,
+  Calculator,
+  Printer,
+  MonitorPlay,
+  FileEdit,
+  BookA,
+  FileCheck2,
+  ListFilter,
+  Users,
+  ShieldAlert,
+  CheckCircle2,
+  AlertTriangle,
+  Layers,
+  RefreshCw
+} from 'lucide-react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragOverlay
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { db } from '../firebase';
+import { doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { usePreferences } from '../contexts/PreferencesContext';
+
+import './BentoGrid.css';
+import './BentoAnimations.css';
+
+const ICONS = {
+  FileText, BrainCircuit, QrCode, Images, MonitorCog, ServerCog, CalendarClock, Download, DatabaseZap, ListTodo, ClipboardList, MessageSquarePlus, FileCode2, BookOpen, Lightbulb, FileSpreadsheet, Server, Calculator, Printer, MonitorPlay, FileEdit, BookA, FileCheck2, ListFilter, Users, ShieldAlert, CheckCircle2, AlertTriangle, Layers, RefreshCw
+};
+
+import { AVAILABLE_TOOLS } from '../data/toolsList';
+import ContentEditorModal from './ContentEditorModal';
+
+const BentoCard = ({ children, className, link, onClick, isEditing, onRemove, listeners, attributes, setNodeRef, isDragging }) => {
+  const Wrapper = link && !isEditing ? motion.a : motion.div;
+
+  function handleMouseMove(e) {
+    if (isEditing) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+    e.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+  }
+  
+  return (
+    <Wrapper 
+      ref={setNodeRef}
+      href={link && !isEditing ? link : undefined}
+      onClick={!isEditing ? onClick : undefined}
+      className={`glass-panel bento-card ${className} ${isEditing ? 'is-editing' : ''}`}
+      onMouseMove={handleMouseMove}
+      initial={false}
+      style={{ 
+        cursor: (!isEditing && (link || onClick)) ? 'pointer' : (isEditing ? 'default' : 'default'),
+        height: '100%',
+        width: '100%',
+        boxShadow: isDragging ? '0px 20px 40px rgba(0,0,0,0.5)' : undefined
+      }}
+      whileHover={!isEditing ? { scale: 1.01, y: -2, zIndex: 10 } : {}}
+      whileTap={(!isEditing && (link || onClick)) ? { scale: 0.98 } : {}}
+    >
+      {isEditing && (
+        <div className="edit-overlay">
+           <button className="remove-btn" onPointerDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onRemove(); }}><X size={16}/></button>
+           <div className="drag-handle" {...attributes} {...listeners}><GripHorizontal size={24}/></div>
+        </div>
+      )}
+      <div className="card-glare" />
+      {children}
+    </Wrapper>
+  );
+};
+
+const SortableBentoItem = ({ item, isEditing, onRemove, renderToolInner, isLarge, isAnyDragging }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: item.id });
+
+  // During drag, the original item goes invisible while DragOverlay takes over visually
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 100 : 1,
+    opacity: isDragging ? 0 : 1, 
+    position: 'relative',
+    height: '100%'
+  };
+
+  const dynamicClass = isLarge ? 'bento-col-2' : '';
+
+  return (
+    <motion.div
+      layout={!isAnyDragging}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.8 }}
+      transition={{ duration: 0.3 }}
+      className={dynamicClass}
+    >
+      <div ref={setNodeRef} style={style}>
+        <BentoCard 
+          className="bento-tool active-tool" 
+          link={item.type === 'link' ? item.url : undefined}
+          onClick={item.onClick}
+          isEditing={isEditing}
+          onRemove={onRemove}
+          attributes={attributes}
+          listeners={listeners}
+          isDragging={isDragging}
+        >
+          {renderToolInner(item, isLarge)}
+        </BentoCard>
+      </div>
+    </motion.div>
+  );
+};
+
+const BentoGrid = (props) => {
+  const { isEditing, resetTrigger } = props;
+  const [items, setItems] = useState([]);
+  const [hiddenItems, setHiddenItems] = useState([]);
+  const [activeId, setActiveId] = useState(null);
+  const [appContent, setAppContent] = useState(null);
+  const [showHeroEditor, setShowHeroEditor] = useState(false);
+  const { preferences } = usePreferences();
+  
+  // A prop isDevMode comes from App.jsx, but BentoGrid only receives isEditing and resetTrigger as explicit props? 
+  // Wait, let's check what props BentoGrid gets. Wait, I will just accept it as a prop.
+  const isDevMode = props.isDevMode || false;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Reference to avoid updating state from firebase while the user is actively dragging or editing
+  const isEditingRef = useRef(isEditing);
+  useEffect(() => {
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
+
+  useEffect(() => {
+    const layoutRef = doc(db, 'config', 'dashboard_layout');
+    
+    const unsubscribe = onSnapshot(layoutRef, (docSnap) => {
+      // Do not override local layout if currently editing to avoid jumping cards
+      if (isEditingRef.current) return;
+      
+      if (docSnap.exists()) {
+        try {
+          const parsed = docSnap.data();
+          const savedIds = parsed.items || [];
+          const savedHiddenIds = parsed.hiddenItems || [];
+
+          const restoredItems = savedIds.map(id => AVAILABLE_TOOLS.find(t => t.id === id)).filter(Boolean);
+          const restoredHidden = savedHiddenIds.map(id => AVAILABLE_TOOLS.find(t => t.id === id)).filter(Boolean);
+          
+          const allSavedIds = new Set([...savedIds, ...savedHiddenIds]);
+          const newTools = AVAILABLE_TOOLS.filter(t => !allSavedIds.has(t.id));
+
+          setItems([...restoredItems, ...newTools]);
+          setHiddenItems(restoredHidden);
+        } catch (e) {
+          setItems([...AVAILABLE_TOOLS]);
+          setHiddenItems([]);
+        }
+      } else {
+        setItems([...AVAILABLE_TOOLS]);
+        setHiddenItems([]);
+      }
+    }, (error) => {
+      console.error("Erro no Firebase (Layout):", error);
+      // Fallback para ferramentas padrão em caso de falha (ex: regras de teste expiradas)
+      if (isEditingRef.current) return;
+      setItems([...AVAILABLE_TOOLS]);
+      setHiddenItems([]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const contentRef = doc(db, 'config', 'app_content');
+    const unsubscribe = onSnapshot(contentRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setAppContent(docSnap.data());
+      } else {
+        // Fallback default
+        setAppContent({
+          buildVersion: 'Build 23/05/2026',
+          heroDesc: 'Melhorias Gerais: Melhorado o layout do <strong>Dossiê Fiscal</strong> e adicionado a pesquisa de <strong>Rejeições NF-e</strong> com artigos da TecnoSpeed. O Leitor agora também suporta <strong>NFC-e (Modelo 65)</strong>. Lançado o <strong>Banco de Ideias</strong> para sugerir melhorias de módulos!',
+          heroHighlight: 'O sistema agora salva automaticamente qual ferramenta você estava usando (Persistência de Abas). Se você fechar a página ou atualizar, ele voltará exatamente de onde parou!',
+          welcomeChangelogTitle: 'Changelog (23/05 - 27/05)',
+          welcomeChangelogItems: '<li><strong>Novo Botão de Pesquisa:</strong> Encontre as ferramentas rapidamente através da nova lupa de pesquisa no topo.</li>\n<li><strong>Configurações Globais:</strong> Novo botão de engrenagem no topo do site, onde dá para remover animações, ocultar o Update Notes (Hero Banner) e desativar notificações.</li>\n<li><strong>Gestor E SysPDV (NOVA):</strong> Ferramenta para gerenciar a instalação e configuração de PDVs em ambiente pós-formatação.</li>\n<li><strong>Leitor XML (NOVA):</strong> Lê e consolida automaticamente XMLs de notas fiscais, separando por CFOP e Alíquotas para fácil auditoria.</li>\n<li><strong>Conversor Imagens (NOVA):</strong> Transforme fotos de comprovantes em PDF ou documentos do Word rapidamente.</li>\n<li><strong>Editor de Etiquetas (NOVA):</strong> Crie etiquetas com visual estilo FastReport, facilitando a formatação e impressão para balanças e produtos.</li>'
+        });
+      }
+    }, (error) => {
+      console.error("Erro no Firebase (Conteúdo):", error);
+      // Fallback em caso de erro no Firebase
+      setAppContent({
+        buildVersion: 'Modo Offline / Fallback',
+        heroDesc: 'O banco de dados (Firebase) está inacessível no momento. É muito provável que as <strong>Regras de Segurança de Teste do Firebase tenham expirado</strong> (elas duram 30 dias). Vá no console do Firebase > Firestore Database > Rules e altere a data limite ou mude para true temporariamente.',
+        heroHighlight: 'As ferramentas abaixo foram carregadas usando as configurações padrão.',
+        welcomeChangelogTitle: 'Erro de Conexão',
+        welcomeChangelogItems: '<li>Verifique as regras do Firebase Firestore.</li>'
+      });
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (resetTrigger > 0) {
+      setItems([...AVAILABLE_TOOLS]);
+      setHiddenItems([]);
+    }
+  }, [resetTrigger]);
+
+  const saveLayout = async (currentItems, currentHidden) => {
+    try {
+      const layoutRef = doc(db, 'config', 'dashboard_layout');
+      await setDoc(layoutRef, {
+        items: currentItems.map(i => i.id),
+        hiddenItems: currentHidden.map(i => i.id)
+      });
+    } catch (err) {
+      console.error("Erro ao salvar layout no Firebase:", err);
+    }
+  };
+
+  const handleSaveHeroContent = async (formData) => {
+    try {
+      const contentRef = doc(db, 'config', 'app_content');
+      await setDoc(contentRef, formData, { merge: true });
+      setShowHeroEditor(false);
+    } catch (err) {
+      console.error("Erro ao salvar conteúdo:", err);
+    }
+  };
+
+  const prevIsEditing = useRef(isEditing);
+  useEffect(() => {
+    if (prevIsEditing.current === true && isEditing === false) {
+      saveLayout(items, hiddenItems);
+    }
+    prevIsEditing.current = isEditing;
+  }, [isEditing, items, hiddenItems]);
+
+  const removeItem = (itemToRemove) => {
+    const newItems = items.filter(i => i.id !== itemToRemove.id);
+    const newHidden = [...hiddenItems, itemToRemove];
+    setItems(newItems);
+    setHiddenItems(newHidden);
+  };
+
+  const restoreItem = (itemToRestore) => {
+    const newHidden = hiddenItems.filter(i => i.id !== itemToRestore.id);
+    const newItems = [...items, itemToRestore];
+    setItems(newItems);
+    setHiddenItems(newHidden);
+  };
+
+  const handleDragStart = (event) => {
+    setActiveId(event.active.id);
+  };
+
+  const handleDragEnd = (event) => {
+    setActiveId(null);
+    const { active, over } = event;
+    
+    if (active.id !== over?.id && over) {
+      setItems((items) => {
+        const oldIndex = items.findIndex((i) => i.id === active.id);
+        const newIndex = items.findIndex((i) => i.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const renderToolInner = (item, isLarge) => {
+    const IconComponent = ICONS[item?.icon] || FileText;
+    const itemProps = {
+       ...item,
+       onClick: item.type === 'action' || item.type === 'action_custom' ? props[item.actionKey] : undefined
+    };
+    item.onClick = itemProps.onClick;
+
+    if (isLarge) {
+      return (
+        <>
+          <div className="tool-inner flex-row" style={{ translateZ: item.innerZ }}>
+            <div className="download-info">
+              <div 
+                className={`status-badge ${!item.status ? 'ping-active' : ''}`} 
+                style={{ 
+                  width: 'fit-content', 
+                  marginBottom: '12px',
+                  color: item.statusColor || undefined,
+                  borderColor: item.statusColor ? `${item.statusColor}50` : undefined,
+                  background: item.statusColor ? `${item.statusColor}15` : undefined
+                }}
+              >
+                <Sparkles size={14}/> {item.status || 'Ativo'}
+              </div>
+              <h2>{item.title}</h2>
+              <p>{item.desc}</p>
+            </div>
+            <div className="large-icon"><IconComponent size={64} /></div>
+          </div>
+          {item.isDownload && <div className="abstract-glow cyan-glow" />}
+        </>
+      );
+    }
+
+    return (
+      <div className="tool-inner" style={{ translateZ: item.innerZ }}>
+        <div className="tool-header">
+          <div className="icon-box" style={{ background: item.iconBg, color: item.iconColor }}>
+            <IconComponent size={24} className={`small-icon anim-svg-${item.icon.toLowerCase()}`} />
+          </div>
+          <div 
+            className={`status-badge ${!item.status ? 'ping-active' : ''}`}
+            style={{ 
+              color: item.statusColor || undefined,
+              borderColor: item.statusColor ? `${item.statusColor}50` : undefined,
+              background: item.statusColor ? `${item.statusColor}15` : undefined
+            }}
+          >
+            <Sparkles size={14}/> {item.status || 'Ativo'}
+          </div>
+        </div>
+        <div className="tool-body">
+          <h2>{item.title}</h2>
+          <p>{item.desc}</p>
+        </div>
+      </div>
+    );
+  };
+
+  // The specific indices that are visually large in the grid
+  const isLargeIndex = (index) => index === 0 || index === 7 || index === 8;
+
+  return (
+    <div className="bento-wrapper">
+      <div className={`bento-container ${isEditing ? 'edit-mode-active' : ''}`} style={{ perspective: isEditing ? 'none' : 2000 }}>
+        
+        {/* Hero Block (Fixed) */}
+        {preferences.showUpdateLog && appContent && (
+          <BentoCard className="bento-hero">
+            <div className="hero-content">
+              <div className="hero-badge" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Info size={16} /> Update Notes</span>
+                {isDevMode && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setShowHeroEditor(true); }}
+                    style={{ background: 'transparent', border: 'none', color: '#a855f7', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    title="Editar Conteúdo"
+                  >
+                    <FileEdit size={16} />
+                  </button>
+                )}
+              </div>
+              <h1>
+                Aplicações Suporte <br/>
+                <span className="text-gradient-primary">{appContent.buildVersion}</span>
+              </h1>
+              <p className="hero-desc" dangerouslySetInnerHTML={{ __html: appContent.heroDesc }}></p>
+              <div className="hero-example">
+                <span className="tag">Destaque</span>
+                <p dangerouslySetInnerHTML={{ __html: appContent.heroHighlight }}></p>
+              </div>
+            </div>
+            <div className="abstract-glow purple-glow" />
+          </BentoCard>
+        )}
+
+        {/* DND Context for the Grid */}
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext 
+            items={items.map(i => i.id)}
+            strategy={rectSortingStrategy}
+          >
+            <AnimatePresence>
+              {items.map((item, index) => (
+                <SortableBentoItem 
+                  key={item.id} 
+                  item={item} 
+                  isEditing={isEditing} 
+                  isLarge={isLargeIndex(index)}
+                  isAnyDragging={activeId !== null}
+                  onRemove={() => removeItem(item)}
+                  renderToolInner={renderToolInner}
+                />
+              ))}
+            </AnimatePresence>
+          </SortableContext>
+
+          {/* Drag Overlay to prevent deformation during drag */}
+          <DragOverlay>
+            {activeId ? (() => {
+              const activeItem = items.find(i => i.id === activeId);
+              if (!activeItem) return null;
+              const activeIndex = items.findIndex(i => i.id === activeId);
+              const isLarge = isLargeIndex(activeIndex);
+              
+              return (
+                <div className={isLarge ? 'bento-col-2' : ''} style={{ width: '100%', height: '100%', pointerEvents: 'none', margin: 0 }}>
+                  <BentoCard 
+                    className="bento-tool active-tool" 
+                    isEditing={true} 
+                    isDragging={true}
+                  >
+                    {renderToolInner(activeItem, isLarge)}
+                  </BentoCard>
+                </div>
+              );
+            })() : null}
+          </DragOverlay>
+
+        </DndContext>
+
+      </div>
+
+      {isEditing && (
+        <motion.div 
+          className="hidden-tools-drawer glass-panel"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 50 }}
+        >
+          <h3>Ferramentas Ocultas</h3>
+          {hiddenItems.length === 0 ? (
+            <p className="empty-hidden-text">Nenhuma ferramenta oculta.</p>
+          ) : (
+            <div className="hidden-tools-list">
+              {hiddenItems.map(item => {
+                const IconComp = ICONS[item?.icon] || FileText;
+                return (
+                  <div key={item.id} className="hidden-tool-item">
+                    <div className="hidden-tool-info">
+                      <IconComp size={20} />
+                      <span>{item.title}</span>
+                    </div>
+                    <button className="add-back-btn" onClick={() => restoreItem(item)}>
+                      <Plus size={18} /> Adicionar
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      <div className="credits-footer">
+        <div className="credit-item">
+          Desenvolvido por <span className="highlight-olyrum">Olyrum (Murylo)</span>
+        </div>
+        <div className="credit-separator">•</div>
+        <div className="credit-item">
+          Powered by <span className="highlight-gemini">Gemini</span> 
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 0C12 0 14.5 9.5 24 12C24 12 14.5 14.5 12 24C12 24 9.5 14.5 0 12C0 12 9.5 9.5 12 0Z" fill="url(#gemini-gradient)"/>
+            <defs>
+              <linearGradient id="gemini-gradient" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+                <stop stopColor="#4F8BFF" />
+                <stop offset="0.5" stopColor="#A75FFF" />
+                <stop offset="1" stopColor="#FF6B6B" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+
+      <ContentEditorModal
+        isOpen={showHeroEditor}
+        onClose={() => setShowHeroEditor(false)}
+        onSave={handleSaveHeroContent}
+        type="hero"
+        initialData={appContent}
+      />
+    </div>
+  );
+};
+
+export default BentoGrid;

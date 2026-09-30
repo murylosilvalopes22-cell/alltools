@@ -470,10 +470,6 @@ Produto a classificar: "${descricao}"`;
       exit={{ opacity: 0, scale: 1.05 }}
       transition={{ type: 'spring', stiffness: 100, damping: 20 }}
     >
-      <button className="back-btn" onClick={onBack} style={{ alignSelf: 'flex-start', marginBottom: '20px' }}>
-        <ArrowLeft size={18} /> Voltar ao Dashboard
-      </button>
-
       <div className="ncm-wrapper">
         <div className="ncm-header">
           <div className="ncm-icon-wrapper">
