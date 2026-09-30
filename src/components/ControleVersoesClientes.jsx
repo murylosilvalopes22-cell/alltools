@@ -149,13 +149,13 @@ const ControleVersoesClientes = ({ onBack }) => {
         return;
     }
 
-    const headers = rows[headerRowIdx].map(h => (h || '').toString().trim().toLowerCase());
-    const colNum = headers.findIndex(h => h.includes('num') || h.includes('licen') || h.includes('código') || h === 'id');
-    const colNome = headers.findIndex(h => h === 'nome' || h.includes('cliente') || h.includes('razão social') || h.includes('razao social'));
+    const headers = Array.from(rows[headerRowIdx]).map(h => (h || '').toString().trim().toLowerCase());
+    const colNum = headers.findIndex(h => h && (h.includes('num') || h.includes('licen') || h.includes('código') || h === 'id'));
+    const colNome = headers.findIndex(h => h && (h === 'nome' || h.includes('cliente') || h.includes('razão social') || h.includes('razao social')));
     const colSistema = headers.findIndex(h => h === 'sistema');
-    const colEndereco = headers.findIndex(h => h.includes('endereço') || h.includes('endereco') || h.includes('cidade'));
-    const colVersao = headers.findIndex(h => h === 'versão' || h === 'versao');
-    const colSit = headers.findIndex(h => h.includes('sit.') || h.includes('situacao') || h.includes('situação'));
+    const colEndereco = headers.findIndex(h => h && (h.includes('endereço') || h.includes('endereco') || h.includes('cidade')));
+    const colVersao = headers.findIndex(h => h && (h === 'versão' || h === 'versao'));
+    const colSit = headers.findIndex(h => h && (h.includes('sit.') || h.includes('situacao') || h.includes('situação')));
     
     const newClientsData = [];
     for (let i = headerRowIdx + 1; i < rows.length; i++) {
