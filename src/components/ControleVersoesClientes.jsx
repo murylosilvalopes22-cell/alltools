@@ -9,6 +9,7 @@ import {
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import initialClientesData from '../data/initialClientesVersoes.json';
+import * as XLSX from 'xlsx';
 import './ControleVersoesClientes.css';
 
 export const isVersionBelowTarget = (versao, target = "04.12.00.00") => {
@@ -114,14 +115,17 @@ const ControleVersoesClientes = ({ onBack }) => {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (evt) => {
-      import('xlsx').then(XLSX => {
+      try {
         const bstr = evt.target.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
         processExcelData(data);
-      });
+      } catch (err) {
+        console.error("Erro ao ler excel:", err);
+        alert("Ocorreu um erro ao tentar ler o arquivo Excel. Verifique se o formato é válido.");
+      }
     };
     reader.readAsBinaryString(file);
     e.target.value = null;
