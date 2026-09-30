@@ -164,12 +164,22 @@ const ControleVersoesClientes = ({ onBack }) => {
         const numRaw = colNum !== -1 ? row[colNum] : '';
         const nomeRaw = colNome !== -1 ? row[colNome] : '';
         if (!numRaw || !nomeRaw) continue;
+        
         const num = String(numRaw).trim();
         const nome = String(nomeRaw).trim();
+        
+        // Pula linhas de separação que por acaso tenham algo escrito nas colunas principais
+        const isSeparator = num.toLowerCase().includes('rota') || num.toLowerCase().includes('cidade') || nome.toLowerCase().includes('cidade');
+        if (isSeparator) continue;
+
+        // Evita duplicatas do mesmo cliente na planilha (ex: múltiplos terminais, mantém o primeiro que costuma ser o principal)
+        if (newClientsData.some(c => c.num === num)) continue;
+
         const sistema = colSistema !== -1 && row[colSistema] ? String(row[colSistema]).trim() : '';
         const endereco = colEndereco !== -1 && row[colEndereco] ? String(row[colEndereco]).trim() : '';
         const versao = colVersao !== -1 && row[colVersao] ? String(row[colVersao]).trim() : '';
         const situacao = colSit !== -1 && row[colSit] ? String(row[colSit]).trim() : 'Ativa';
+        
         newClientsData.push({ id: num, num, nome, sistema, endereco, versao, situacao });
     }
     
