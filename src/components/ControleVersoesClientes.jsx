@@ -183,10 +183,17 @@ const ControleVersoesClientes = ({ onBack }) => {
         if (!existing) {
             added.push(nc);
         } else {
+            // Preservar a formatação original (caixa alta/baixa) se a palavra for a mesma
+            if (nc.nome && existing.nome && nc.nome.toLowerCase() === existing.nome.toLowerCase()) nc.nome = existing.nome;
+            if (nc.situacao && existing.situacao && nc.situacao.toLowerCase() === existing.situacao.toLowerCase()) nc.situacao = existing.situacao;
+            if (nc.versao && existing.versao && nc.versao.toLowerCase() === existing.versao.toLowerCase()) nc.versao = existing.versao;
+            if (nc.endereco && existing.endereco && nc.endereco.toLowerCase() === existing.endereco.toLowerCase()) nc.endereco = existing.endereco;
+
             let changes = [];
             if (nc.nome && nc.nome !== existing.nome) changes.push(`Nome: ${existing.nome} -> ${nc.nome}`);
             if (nc.situacao && nc.situacao !== existing.situacao) changes.push(`Situação: ${existing.situacao} -> ${nc.situacao}`);
             if (nc.versao && nc.versao !== existing.versao) changes.push(`Versão: ${existing.versao} -> ${nc.versao}`);
+            if (nc.endereco && nc.endereco !== existing.endereco) changes.push(`Endereço: ${existing.endereco} -> ${nc.endereco}`);
             
             if (changes.length > 0) {
                 updated.push({ original: existing, novo: nc, changes });
