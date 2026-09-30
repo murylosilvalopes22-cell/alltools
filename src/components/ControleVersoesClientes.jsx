@@ -116,18 +116,19 @@ const ControleVersoesClientes = ({ onBack }) => {
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
-        const bstr = evt.target.result;
-        const wb = XLSX.read(bstr, { type: 'binary' });
+        const data = new Uint8Array(evt.target.result);
+        const xlsxLib = XLSX.read ? XLSX : XLSX.default;
+        const wb = xlsxLib.read(data, { type: 'array' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-        processExcelData(data);
+        const jsonRows = xlsxLib.utils.sheet_to_json(ws, { header: 1 });
+        processExcelData(jsonRows);
       } catch (err) {
         console.error("Erro ao ler excel:", err);
-        alert("Ocorreu um erro ao tentar ler o arquivo Excel. Verifique se o formato é válido.");
+        alert("Ocorreu um erro ao tentar ler o arquivo Excel. Erro interno: " + err.message);
       }
     };
-    reader.readAsBinaryString(file);
+    reader.readAsArrayBuffer(file);
     e.target.value = null;
   };
 
