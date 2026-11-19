@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, Search, Filter, AlertTriangle, CheckCircle2, 
-  Rocket, Plus, Trash2, Edit3, ShieldAlert, ListFilter, 
-  Upload, Download, Layers, X, Save, RefreshCw,
-  MessageSquare, Tag, Palette, Check
+import {
+  Search, AlertTriangle, Rocket, Plus, Trash2, ShieldAlert, ListFilter,
+  Upload, Download, Layers, X, Save, RefreshCw, Tag, Check, ChevronDown
 } from 'lucide-react';
 import { doc, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -16,7 +14,7 @@ export const isVersionBelowTarget = (versao, target = "04.12.00.00") => {
   if (!versao || typeof versao !== 'string') return true;
   const cleanVer = versao.trim();
   if (cleanVer.toLowerCase().includes('inviável') || cleanVer.toLowerCase().includes('inviavel')) return false;
-  
+
   const parseParts = (v) => v.split('.').map(num => parseInt(num, 10) || 0);
   const vParts = parseParts(cleanVer);
   const tParts = parseParts(target);
@@ -30,7 +28,78 @@ export const isVersionBelowTarget = (versao, target = "04.12.00.00") => {
   return false;
 };
 
-const ControleVersoesClientes = ({ onBack }) => {
+const CustomSelect = ({ value, onChange, options, placeholder = 'Selecione...', icon = null, className = '', menuUp = false }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className={`custom-select-container ${isOpen ? 'is-open' : ''} ${className}`.trim()} ref={containerRef}>
+      <button
+        type="button"
+        className="custom-select-trigger"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
+      >
+        <span className="custom-select-label-wrap">
+          {icon && <span className="custom-select-icon">{icon}</span>}
+          <span className="custom-select-text">
+            {selectedOption ? selectedOption.label : placeholder}
+          </span>
+        </span>
+        <ChevronDown size={15} className={`custom-select-arrow ${isOpen ? 'rotated' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className={`custom-select-menu ${menuUp ? 'open-up' : ''}`}
+            initial={{ opacity: 0, y: menuUp ? 6 : -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: menuUp ? 6 : -6, scale: 0.98 }}
+            transition={{ duration: 0.14 }}
+          >
+            {options.map((opt) => {
+              const isSelected = opt.value === value;
+              return (
+                <button
+                  key={String(opt.value)}
+                  type="button"
+                  className={`custom-select-option ${isSelected ? 'selected' : ''} ${opt.isWarning ? 'is-warning' : ''}`}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setIsOpen(false);
+                  }}
+                >
+                  <span className="custom-select-opt-text">{opt.label}</span>
+                  <span className="custom-select-opt-right">
+                    {opt.badge && <span className="custom-select-opt-badge">{opt.badge}</span>}
+                    {isSelected && <Check size={14} className="custom-select-check" />}
+                  </span>
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const ControleVersoesClientes = () => {
   const [clientes, setClientes] = useState(initialClientesData || []);
   const [versoesCadastradas, setVersoesCadastradas] = useState(() => {
     const defaultVersoes = Array.from(new Set((initialClientesData || []).map(c => c.versao))).filter(Boolean);
@@ -45,11 +114,10 @@ const ControleVersoesClientes = ({ onBack }) => {
   const [filterVersao, setFilterVersao] = useState('');
   const [filterSituacao, setFilterSituacao] = useState('');
   const [filterTag, setFilterTag] = useState('');
-  const [filterOnlyDesatualizados, setFilterOnlyDesatualizados] = useState(false);
 
-  // Ordenação ao clicar no cabeçalho da tabela (Licença / Nome)
+  // Ordenação ao clicar no cabeçalho da tabela (Licença / Nome / Versão)
   const [sortField, setSortField] = useState('num');
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' ou 'desc'
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const handleSort = (field) => {
     if (sortField === field) {
@@ -137,18 +205,18 @@ const ControleVersoesClientes = ({ onBack }) => {
   const processExcelData = (rows) => {
     if (!rows || rows.length === 0) return;
     let headerRowIdx = -1;
-    for(let i=0; i<Math.min(20, rows.length); i++) {
-        const row = rows[i] || [];
-        const txt = row.join(' ').toLowerCase();
-        if ((txt.includes('num') || txt.includes('licen') || txt.includes('código')) && txt.includes('nome')) {
-            headerRowIdx = i;
-            break;
-        }
+    for (let i = 0; i < Math.min(20, rows.length); i++) {
+      const row = rows[i] || [];
+      const txt = row.join(' ').toLowerCase();
+      if ((txt.includes('num') || txt.includes('licen') || txt.includes('código')) && txt.includes('nome')) {
+        headerRowIdx = i;
+        break;
+      }
     }
-    
+
     if (headerRowIdx === -1) {
-        alert("Não foi possível encontrar o cabeçalho da planilha. Verifique se contém as colunas Num. e Nome.");
-        return;
+      alert("Não foi possível encontrar o cabeçalho da planilha. Verifique se contém as colunas Num. e Nome.");
+      return;
     }
 
     const headers = Array.from(rows[headerRowIdx]).map(h => (h || '').toString().trim().toLowerCase());
@@ -158,101 +226,95 @@ const ControleVersoesClientes = ({ onBack }) => {
     const colEndereco = headers.findIndex(h => h && (h.includes('endereço') || h.includes('endereco') || h.includes('cidade')));
     const colVersao = headers.findIndex(h => h && (h === 'versão' || h === 'versao'));
     const colSit = headers.findIndex(h => h && (h.includes('sit.') || h.includes('situacao') || h.includes('situação')));
-    
+
     const newClientsData = [];
     for (let i = headerRowIdx + 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || row.length === 0) continue;
-        const numRaw = colNum !== -1 ? row[colNum] : '';
-        const nomeRaw = colNome !== -1 ? row[colNome] : '';
-        if (!numRaw || !nomeRaw) continue;
-        
-        const num = String(numRaw).trim();
-        const nome = String(nomeRaw).trim();
-        
-        // Pula linhas de separação que por acaso tenham algo escrito nas colunas principais
-        const isSeparator = num.toLowerCase().includes('rota') || num.toLowerCase().includes('cidade') || nome.toLowerCase().includes('cidade');
-        if (isSeparator) continue;
+      const row = rows[i];
+      if (!row || row.length === 0) continue;
+      const numRaw = colNum !== -1 ? row[colNum] : '';
+      const nomeRaw = colNome !== -1 ? row[colNome] : '';
+      if (!numRaw || !nomeRaw) continue;
 
-        // Evita duplicatas do mesmo cliente na planilha (ex: múltiplos terminais, mantém o primeiro que costuma ser o principal)
-        if (newClientsData.some(c => c.num === num)) continue;
+      const num = String(numRaw).trim();
+      const nome = String(nomeRaw).trim();
 
-        const sistema = colSistema !== -1 && row[colSistema] ? String(row[colSistema]).trim() : '';
-        const endereco = colEndereco !== -1 && row[colEndereco] ? String(row[colEndereco]).trim() : '';
-        const versao = colVersao !== -1 && row[colVersao] ? String(row[colVersao]).trim() : '';
-        const situacao = colSit !== -1 && row[colSit] ? String(row[colSit]).trim() : 'Ativa';
-        
-        newClientsData.push({ id: num, num, nome, sistema, endereco, versao, situacao });
+      const isSeparator = num.toLowerCase().includes('rota') || num.toLowerCase().includes('cidade') || nome.toLowerCase().includes('cidade');
+      if (isSeparator) continue;
+
+      if (newClientsData.some(c => c.num === num)) continue;
+
+      const sistema = colSistema !== -1 && row[colSistema] ? String(row[colSistema]).trim() : '';
+      const endereco = colEndereco !== -1 && row[colEndereco] ? String(row[colEndereco]).trim() : '';
+      const versao = colVersao !== -1 && row[colVersao] ? String(row[colVersao]).trim() : '';
+      const situacao = colSit !== -1 && row[colSit] ? String(row[colSit]).trim() : 'Ativa';
+
+      newClientsData.push({ id: num, num, nome, sistema, endereco, versao, situacao });
     }
-    
+
     const added = [];
     const updated = [];
-    
-    newClientsData.forEach(nc => {
-        // clientes state may not be fully synced in this callback without taking it from current state,
-        // but we are using it inside the component. We use the 'clientes' array.
-        const existing = clientes.find(c => c.id === nc.id || c.num === nc.num);
-        if (!existing) {
-            added.push(nc);
-        } else {
-            // Preservar a formatação original (caixa alta/baixa) se a palavra for a mesma
-            if (nc.nome && existing.nome && nc.nome.toLowerCase() === existing.nome.toLowerCase()) nc.nome = existing.nome;
-            if (nc.situacao && existing.situacao && nc.situacao.toLowerCase() === existing.situacao.toLowerCase()) nc.situacao = existing.situacao;
-            if (nc.versao && existing.versao && nc.versao.toLowerCase() === existing.versao.toLowerCase()) nc.versao = existing.versao;
-            if (nc.endereco && existing.endereco && nc.endereco.toLowerCase() === existing.endereco.toLowerCase()) nc.endereco = existing.endereco;
 
-            let changes = [];
-            if (nc.nome && nc.nome !== existing.nome) changes.push(`Nome: ${existing.nome} -> ${nc.nome}`);
-            if (nc.situacao && nc.situacao !== existing.situacao) changes.push(`Situação: ${existing.situacao} -> ${nc.situacao}`);
-            if (nc.versao && nc.versao !== existing.versao) changes.push(`Versão: ${existing.versao} -> ${nc.versao}`);
-            if (nc.endereco && nc.endereco !== existing.endereco) changes.push(`Endereço: ${existing.endereco} -> ${nc.endereco}`);
-            
-            if (changes.length > 0) {
-                updated.push({ original: existing, novo: nc, changes });
-            }
+    newClientsData.forEach(nc => {
+      const existing = clientes.find(c => c.id === nc.id || c.num === nc.num);
+      if (!existing) {
+        added.push(nc);
+      } else {
+        if (nc.nome && existing.nome && nc.nome.toLowerCase() === existing.nome.toLowerCase()) nc.nome = existing.nome;
+        if (nc.situacao && existing.situacao && nc.situacao.toLowerCase() === existing.situacao.toLowerCase()) nc.situacao = existing.situacao;
+        if (nc.versao && existing.versao && nc.versao.toLowerCase() === existing.versao.toLowerCase()) nc.versao = existing.versao;
+        if (nc.endereco && existing.endereco && nc.endereco.toLowerCase() === existing.endereco.toLowerCase()) nc.endereco = existing.endereco;
+
+        let changes = [];
+        if (nc.nome && nc.nome !== existing.nome) changes.push(`Nome: ${existing.nome} -> ${nc.nome}`);
+        if (nc.situacao && nc.situacao !== existing.situacao) changes.push(`Situação: ${existing.situacao} -> ${nc.situacao}`);
+        if (nc.versao && nc.versao !== existing.versao) changes.push(`Versão: ${existing.versao} -> ${nc.versao}`);
+        if (nc.endereco && nc.endereco !== existing.endereco) changes.push(`Endereço: ${existing.endereco} -> ${nc.endereco}`);
+
+        if (changes.length > 0) {
+          updated.push({ original: existing, novo: nc, changes });
         }
+      }
     });
-    
+
     setModalImportPreview({ added, updated, allParsed: newClientsData });
   };
-  
+
   const handleConfirmImport = async () => {
     if (!modalImportPreview) return;
     let updatedClientes = [...clientes];
     let newVersions = [...versoesCadastradas];
-    
+
     modalImportPreview.updated.forEach(item => {
-        const idx = updatedClientes.findIndex(c => c.id === item.original.id);
-        if (idx !== -1) {
-            updatedClientes[idx] = { 
-                ...updatedClientes[idx], 
-                nome: item.novo.nome || updatedClientes[idx].nome,
-                situacao: item.novo.situacao || updatedClientes[idx].situacao,
-                versao: item.novo.versao || updatedClientes[idx].versao,
-                sistema: item.novo.sistema || updatedClientes[idx].sistema,
-                endereco: item.novo.endereco || updatedClientes[idx].endereco,
-                atualizadoEm: Date.now()
-            };
-            if (item.novo.versao && !newVersions.includes(item.novo.versao)) newVersions.push(item.novo.versao);
-        }
+      const idx = updatedClientes.findIndex(c => c.id === item.original.id);
+      if (idx !== -1) {
+        updatedClientes[idx] = {
+          ...updatedClientes[idx],
+          nome: item.novo.nome || updatedClientes[idx].nome,
+          situacao: item.novo.situacao || updatedClientes[idx].situacao,
+          versao: item.novo.versao || updatedClientes[idx].versao,
+          sistema: item.novo.sistema || updatedClientes[idx].sistema,
+          endereco: item.novo.endereco || updatedClientes[idx].endereco,
+          atualizadoEm: Date.now()
+        };
+        if (item.novo.versao && !newVersions.includes(item.novo.versao)) newVersions.push(item.novo.versao);
+      }
     });
-    
+
     modalImportPreview.added.forEach(item => {
-        updatedClientes.unshift({
-            ...item,
-            servidor: 'IMPORTADO',
-            atualizadoEm: Date.now()
-        });
-        if (item.versao && !newVersions.includes(item.versao)) newVersions.push(item.versao);
+      updatedClientes.unshift({
+        ...item,
+        servidor: 'IMPORTADO',
+        atualizadoEm: Date.now()
+      });
+      if (item.versao && !newVersions.includes(item.versao)) newVersions.push(item.versao);
     });
-    
+
     newVersions.sort();
     setClientes(updatedClientes);
     setVersoesCadastradas(newVersions);
     await saveToFirebase(updatedClientes, newVersions);
     setModalImportPreview(null);
   };
-
 
   useEffect(() => {
     const docRef = doc(db, 'gestao_sistemas', 'controle_versoes_clientes');
@@ -390,6 +452,60 @@ const ControleVersoesClientes = ({ onBack }) => {
   const atualizadosCount = totalClientes - desatualizadosCount;
   const atualizadosPercent = totalClientes > 0 ? Math.round((atualizadosCount / totalClientes) * 100) : 0;
 
+  const versaoFilterOptions = useMemo(() => [
+    { value: '', label: `Desatualizados (< ${versaoAlvoCurta})`, badge: String(desatualizadosCount), isWarning: true },
+    { value: 'ALL', label: 'Todas as Versões', badge: String(totalClientes) },
+    { value: 'ONLY_OK', label: `Atualizados (≥ ${versaoAlvoCurta})`, badge: String(atualizadosCount) },
+    ...versoesCadastradas.map(ver => ({
+      value: ver,
+      label: ver,
+      badge: isVersionBelowTarget(ver, versaoAlvo) ? `< ${versaoAlvoCurta}` : 'OK',
+      isWarning: isVersionBelowTarget(ver, versaoAlvo)
+    }))
+  ], [versaoAlvo, versaoAlvoCurta, desatualizadosCount, totalClientes, atualizadosCount, versoesCadastradas]);
+
+  const situacaoFilterOptions = useMemo(() => [
+    { value: '', label: 'Todas as Situações' },
+    ...situacoesUnicas.map(sit => {
+      const isEp = (sit || '').toLowerCase().includes('implanta') || (sit || '').toUpperCase() === 'EP';
+      return { value: sit, label: isEp ? 'EP (Em implantação)' : sit };
+    })
+  ], [situacoesUnicas]);
+
+  const tagFilterOptions = useMemo(() => [
+    { value: '', label: 'Todas as Obs. / Tags' },
+    { value: 'ONLY_WITH_OBS', label: 'Com alguma Obs. ou Tag' },
+    { value: 'ONLY_WITHOUT_OBS', label: 'Sem Obs. ou Tag' },
+    ...tagsUnicas.map(tag => ({ value: tag, label: `Tag: ${tag}` }))
+  ], [tagsUnicas]);
+
+  const versaoAlvoOptions = useMemo(() => {
+    const base = versoesCadastradas.includes(versaoAlvo)
+      ? versoesCadastradas
+      : [versaoAlvo, ...versoesCadastradas];
+    return base.map(ver => ({
+      value: ver,
+      label: ver,
+      badge: ver === versaoAlvo ? 'Alvo Atual' : undefined
+    }));
+  }, [versoesCadastradas, versaoAlvo]);
+
+  const updateClientVersionOptions = useMemo(() => [
+    ...versoesCadastradas.map(ver => ({
+      value: ver,
+      label: ver,
+      badge: modalUpdateClient && ver === modalUpdateClient.versao ? 'Atual' : undefined,
+      isWarning: isVersionBelowTarget(ver, versaoAlvo)
+    })),
+    { value: 'CUSTOM', label: 'Digitar nova versão manual...' }
+  ], [versoesCadastradas, modalUpdateClient, versaoAlvo]);
+
+  const newClientSituacaoOptions = useMemo(() => [
+    { value: 'Ativa', label: 'Ativa' },
+    { value: 'Em implantação', label: 'EP (Em implantação)' },
+    { value: 'Bloqueada', label: 'Bloqueada' }
+  ], []);
+
   const handleUpdateClientVersion = async () => {
     if (!modalUpdateClient) return;
 
@@ -471,7 +587,7 @@ const ControleVersoesClientes = ({ onBack }) => {
       nome: '',
       endereco: '',
       servidor: 'IMPLANTACAO',
-      versao: '04.12.00.00',
+      versao: versaoAlvo,
       situacao: 'Ativa'
     });
   };
@@ -485,7 +601,7 @@ const ControleVersoesClientes = ({ onBack }) => {
   };
 
   const handleResetToSheet = async () => {
-    if (window.confirm('Atenção: Deseja restaurar a tabela original com os 355 clientes da planilha?')) {
+    if (window.confirm('Atenção: Deseja restaurar a tabela original com os clientes padrão da planilha?')) {
       const defaultVersoes = Array.from(new Set((initialClientesData || []).map(c => c.versao))).filter(Boolean).sort();
       setClientes(initialClientesData || []);
       setVersoesCadastradas(defaultVersoes);
@@ -518,19 +634,24 @@ const ControleVersoesClientes = ({ onBack }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       className="controle-versoes-container"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
-      {/* Topo Compacto */}
+      {/* Topo Integrado ao Portal */}
       <div className="controle-top-section">
         <div className="controle-header-left">
           <div className="controle-title-box">
-            <ShieldAlert size={22} style={{ color: '#eab308' }} />
-            <h1>Controle de Versões</h1>
+            <div className="controle-title-icon">
+              <ShieldAlert size={20} />
+            </div>
+            <div>
+              <h1>Controle de Versões</h1>
+              <span className="controle-title-sub">Alvo mínimo: <strong>{versaoAlvo}</strong></span>
+            </div>
           </div>
         </div>
 
@@ -568,147 +689,136 @@ const ControleVersoesClientes = ({ onBack }) => {
 
         {/* Botões do Topo */}
         <div className="controle-header-actions">
-          <button className="btn-compact-action btn-new-client" onClick={() => setModalAddClient(true)}>
-            <Plus size={16} /> Novo Cliente
+          <button type="button" className="btn-compact-action btn-new-client" onClick={() => setModalAddClient(true)}>
+            <Plus size={15} /> Novo Cliente
           </button>
-          <button className="btn-compact-action btn-manage-ver" onClick={() => setModalManageVersions(true)}>
-            <Layers size={16} /> Versões ({versoesCadastradas.length})
+          <button type="button" className="btn-compact-action btn-manage-ver" onClick={() => setModalManageVersions(true)}>
+            <Layers size={15} /> Versões ({versoesCadastradas.length})
           </button>
-          <input 
-            type="file" 
-            accept=".xls,.xlsx" 
-            style={{ display: 'none' }} 
-            ref={fileInputRef} 
-            onChange={handleFileUpload} 
+          <input
+            type="file"
+            accept=".xls,.xlsx"
+            style={{ display: 'none' }}
+            ref={fileInputRef}
+            onChange={handleFileUpload}
           />
-          <button className="btn-compact-action btn-manage-ver" onClick={() => fileInputRef.current.click()} title="Importar/Sincronizar Excel de Clientes">
-            <Upload size={16} /> Importar Excel
+          <button type="button" className="btn-compact-action btn-manage-ver" onClick={() => fileInputRef.current.click()} title="Importar/Sincronizar Excel de Clientes">
+            <Upload size={15} /> Importar Excel
           </button>
-          <button className="btn-compact-action btn-manage-ver" onClick={handleExportExcel} title="Exportar lista atual para Excel">
-            <Download size={16} /> Exportar Excel
+          <button type="button" className="btn-compact-action btn-manage-ver" onClick={handleExportExcel} title="Exportar lista atual para Excel">
+            <Download size={15} /> Exportar Excel
           </button>
-          <button 
-            className="btn-compact-action btn-manage-ver" 
-            onClick={handleResetToSheet} 
+          <button
+            type="button"
+            className="btn-compact-action btn-manage-ver btn-icon-only"
+            onClick={handleResetToSheet}
             title="Restaurar da Planilha Excel original"
-            style={{ padding: '7px 10px' }}
+            aria-label="Restaurar planilha original"
           >
-            <RefreshCw size={16} />
+            <RefreshCw size={15} />
           </button>
         </div>
       </div>
 
-      {/* Barra de Busca e Filtros Compacta */}
+      {/* Barra de Busca e Filtros Glassmorphic */}
       <div className="controle-toolbar-compact">
         <div className="search-box-clientes">
           <Search size={16} className="search-icon-clientes" />
-          <input 
-            type="text" 
-            placeholder="Pesquisar por Nome, Num. ou Endereço..." 
+          <input
+            type="text"
+            placeholder="Pesquisar por Nome, Licença, Tag ou Obs..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {searchTerm && (
+            <button type="button" className="search-clear-clientes" onClick={() => setSearchTerm('')} title="Limpar busca">
+              <X size={14} />
+            </button>
+          )}
         </div>
 
         <div className="toolbar-filters">
-          <select 
-            className="filter-select"
+          <CustomSelect
             value={filterVersao}
-            onChange={(e) => setFilterVersao(e.target.value)}
-          >
-            <option value="">Padrão: Apenas Desatualizados (&lt; {versaoAlvoCurta})</option>
-            <option value="ALL">Mostrar Todas as Versões ({totalClientes})</option>
-            <option value="ONLY_OK">Apenas Atualizados (≥ {versaoAlvoCurta})</option>
-            {versoesCadastradas.map((ver, idx) => (
-              <option key={idx} value={ver}>{ver} {isVersionBelowTarget(ver, versaoAlvo) ? `(< ${versaoAlvoCurta})` : ''}</option>
-            ))}
-          </select>
+            onChange={setFilterVersao}
+            options={versaoFilterOptions}
+            icon={<Layers size={14} />}
+            className="toolbar-select-versao"
+          />
 
-          <select 
-            className="filter-select"
+          <CustomSelect
             value={filterSituacao}
-            onChange={(e) => setFilterSituacao(e.target.value)}
-          >
-            <option value="">Todas as Situações</option>
-            {situacoesUnicas.map((sit, idx) => {
-              const isEp = (sit || '').toLowerCase().includes('implanta') || (sit || '').toUpperCase() === 'EP';
-              return (
-                <option key={idx} value={sit}>{isEp ? 'EP (Em implantação)' : sit}</option>
-              );
-            })}
-          </select>
+            onChange={setFilterSituacao}
+            options={situacaoFilterOptions}
+            icon={<ShieldAlert size={14} />}
+            className="toolbar-select-sit"
+          />
 
-          <select 
-            className="filter-select"
+          <CustomSelect
             value={filterTag}
-            onChange={(e) => setFilterTag(e.target.value)}
-          >
-            <option value="">Todas as Obs. / Tags</option>
-            <option value="ONLY_WITH_OBS">Com alguma Obs. ou Tag</option>
-            <option value="ONLY_WITHOUT_OBS">Sem Obs. ou Tag</option>
-            {tagsUnicas.map((tag, idx) => (
-              <option key={idx} value={tag}>Tag: {tag}</option>
-            ))}
-          </select>
+            onChange={setFilterTag}
+            options={tagFilterOptions}
+            icon={<Tag size={14} />}
+            className="toolbar-select-tag"
+          />
 
-          <button 
+          <button
+            type="button"
             className={`btn-filter-warning ${filterVersao === '' ? 'active' : ''}`}
             onClick={() => setFilterVersao(filterVersao === '' ? 'ALL' : '')}
             title={filterVersao === '' ? 'Clique para mostrar todos os clientes (incluindo atualizados)' : 'Clique para filtrar apenas os desatualizados'}
           >
-            <AlertTriangle size={15} /> {filterVersao === '' ? `Exibindo: < ${versaoAlvoCurta} (Clique p/ Todos)` : `Filtrar Apenas < ${versaoAlvoCurta}`}
+            <AlertTriangle size={14} /> {filterVersao === '' ? `Apenas < ${versaoAlvoCurta}` : `Filtrar < ${versaoAlvoCurta}`}
           </button>
+
+          <span className="toolbar-results-counter">
+            Exibindo <strong>{clientesFiltrados.length}</strong> de <strong>{totalClientes}</strong>
+          </span>
         </div>
       </div>
 
-      {/* Tabela de Clientes com Coluna de Ações Sempre Visível (Sticky Right) */}
+      {/* Tabela de Clientes Editorial Glass */}
       <div className="tabela-container-scroll">
         <div className="tabela-wrapper">
           <table className="clientes-tabela">
             <thead>
               <tr>
-                <th 
-                  className="col-num sortable-th" 
-                  onClick={() => handleSort('num')} 
-                  title="Clique para ordenar pela numeração da Licença (menor p/ maior ou maior p/ menor)"
+                <th
+                  className="col-num sortable-th"
+                  onClick={() => handleSort('num')}
+                  title="Clique para ordenar pela numeração da Licença"
                 >
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', justifyContent: 'center' }}>
+                  <div className="th-sort-wrap center">
                     Licença
-                    {sortField === 'num' ? (
-                      <span style={{ color: 'var(--neon-cyan)', fontSize: '0.85rem' }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    ) : (
-                      <span style={{ opacity: 0.3, fontSize: '0.85rem' }}>↕</span>
-                    )}
+                    <span className={`sort-indicator ${sortField === 'num' ? 'active' : ''}`}>
+                      {sortField === 'num' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}
+                    </span>
                   </div>
                 </th>
-                <th 
-                  className="col-nome sortable-th" 
-                  onClick={() => handleSort('nome')} 
-                  title="Clique para ordenar pelo Nome do Cliente (A-Z ou Z-A)"
+                <th
+                  className="col-nome sortable-th"
+                  onClick={() => handleSort('nome')}
+                  title="Clique para ordenar pelo Nome do Cliente"
                 >
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <div className="th-sort-wrap">
                     Nome do Cliente
-                    {sortField === 'nome' ? (
-                      <span style={{ color: 'var(--neon-cyan)', fontSize: '0.85rem' }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    ) : (
-                      <span style={{ opacity: 0.3, fontSize: '0.85rem' }}>↕</span>
-                    )}
+                    <span className={`sort-indicator ${sortField === 'nome' ? 'active' : ''}`}>
+                      {sortField === 'nome' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}
+                    </span>
                   </div>
                 </th>
                 <th className="col-obs">Obs. / Tag</th>
                 <th className="col-sit">Situação</th>
-                <th 
-                  className="col-ver sortable-th" 
-                  onClick={() => handleSort('ver')} 
-                  title="Clique para ordenar pela Versão do Cliente (menor p/ maior ou maior p/ menor)"
+                <th
+                  className="col-ver sortable-th"
+                  onClick={() => handleSort('ver')}
+                  title="Clique para ordenar pela Versão do Cliente"
                 >
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', justifyContent: 'center' }}>
+                  <div className="th-sort-wrap center">
                     Versão
-                    {sortField === 'ver' ? (
-                      <span style={{ color: 'var(--neon-cyan)', fontSize: '0.85rem' }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                    ) : (
-                      <span style={{ opacity: 0.3, fontSize: '0.85rem' }}>↕</span>
-                    )}
+                    <span className={`sort-indicator ${sortField === 'ver' ? 'active' : ''}`}>
+                      {sortField === 'ver' ? (sortOrder === 'asc' ? '↑' : '↓') : '↕'}
+                    </span>
                   </div>
                 </th>
                 <th className="col-acoes">Ações</th>
@@ -717,9 +827,9 @@ const ControleVersoesClientes = ({ onBack }) => {
             <tbody>
               {clientesFiltrados.length === 0 ? (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                      <ListFilter size={36} style={{ opacity: 0.3 }} />
+                  <td colSpan="6" className="empty-table-cell">
+                    <div className="empty-table-box">
+                      <ListFilter size={34} className="empty-table-icon" />
                       <span>Nenhum cliente encontrado com os filtros atuais.</span>
                     </div>
                   </td>
@@ -729,21 +839,21 @@ const ControleVersoesClientes = ({ onBack }) => {
                   const isBelow = isVersionBelowTarget(cliente.versao, versaoAlvo);
                   const isTef = cliente.etiqueta === 'Stor Smart TEF';
                   const isUrgent = isBelow && isTef;
-                  
+
                   return (
                     <tr key={cliente.id} className={`${isUrgent ? 'row-urgent-update' : (isBelow ? 'row-warning-update' : '')} ${cliente.corRow ? `row-color-${cliente.corRow}` : ''}`.trim()}>
                       <td className="col-num" title={`Licença Nº ${cliente.num || cliente.id}`}>
-                        <strong style={{ fontSize: '0.94rem', color: 'var(--neon-cyan)', fontWeight: 800 }}>{cliente.num || cliente.id}</strong>
+                        <span className="licenca-badge">{cliente.num || cliente.id}</span>
                       </td>
                       <td className="col-nome" title={cliente.nome}>
-                        <div style={{ fontWeight: 700, fontSize: '0.92rem', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cliente.nome}</div>
-                        {cliente.sistema && <span style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>{cliente.sistema}</span>}
+                        <div className="cliente-nome-title">{cliente.nome}</div>
+                        {cliente.sistema && <span className="cliente-sistema-sub">{cliente.sistema}</span>}
                       </td>
                       <td className="col-obs" onClick={() => handleOpenObsModal(cliente)} title="Clique para editar Observações, Etiquetas e Cor do Cliente">
                         <div className="obs-cell-wrapper">
                           {!cliente.obs && !cliente.etiqueta ? (
                             <button type="button" className="btn-add-obs-cell" onClick={(e) => { e.stopPropagation(); handleOpenObsModal(cliente); }}>
-                              <Plus size={13} /> + Obs / Tag
+                              <Plus size={12} /> Obs / Tag
                             </button>
                           ) : (
                             <>
@@ -780,17 +890,20 @@ const ControleVersoesClientes = ({ onBack }) => {
                       <td className="col-ver">
                         {isBelow ? (
                           <span className={`badge-versao ${isUrgent ? 'urgent' : 'warning'}`} title={`Abaixo da ${versaoAlvo} — Precisa Atualizar!`}>
-                            {cliente.versao}
+                            <span className="version-dot" />
+                            {cliente.versao || 'N/A'}
                           </span>
                         ) : (
                           <span className="badge-versao ok" title="Versão Atualizada">
-                            {cliente.versao}
+                            <span className="version-dot" />
+                            {cliente.versao || 'N/A'}
                           </span>
                         )}
                       </td>
                       <td className="col-acoes-td">
                         <div className="td-acoes">
-                          <button 
+                          <button
+                            type="button"
                             className={`btn-update-action ${isBelow ? 'warning-btn' : ''}`}
                             onClick={() => {
                               setModalUpdateClient(cliente);
@@ -801,10 +914,12 @@ const ControleVersoesClientes = ({ onBack }) => {
                           >
                             Atualizar
                           </button>
-                          <button 
-                            className="btn-trash-action" 
+                          <button
+                            type="button"
+                            className="btn-trash-action"
                             onClick={() => handleDeleteClient(cliente.id, cliente.nome)}
                             title="Excluir cliente"
+                            aria-label={`Excluir ${cliente.nome}`}
                           >
                             <Trash2 size={15} />
                           </button>
@@ -823,7 +938,7 @@ const ControleVersoesClientes = ({ onBack }) => {
       <AnimatePresence>
         {modalUpdateClient && (
           <div className="modal-overlay-clientes" onClick={() => setModalUpdateClient(null)}>
-            <motion.div 
+            <motion.div
               className="modal-content-clientes"
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.95, opacity: 0 }}
@@ -832,38 +947,35 @@ const ControleVersoesClientes = ({ onBack }) => {
             >
               <div className="modal-header-clientes">
                 <h3><Rocket size={20} style={{ color: 'var(--neon-cyan)' }} /> Atualizar Versão do Cliente</h3>
-                <button className="btn-icon" onClick={() => setModalUpdateClient(null)}><X size={18} /></button>
+                <button type="button" className="btn-icon" onClick={() => setModalUpdateClient(null)}><X size={18} /></button>
               </div>
 
-              <div style={{ marginBottom: '16px', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-light)' }}>
-                <strong style={{ fontSize: '1rem', display: 'block', marginBottom: '2px' }}>{modalUpdateClient.nome}</strong>
-                <span style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>Versão Atual no terminal: </span>
-                <strong style={{ color: isVersionBelowTarget(modalUpdateClient.versao, versaoAlvo) ? '#eab308' : '#10b981', fontSize: '0.94rem' }}>
-                  {modalUpdateClient.versao}
-                </strong>
+              <div className="modal-client-summary">
+                <strong>{modalUpdateClient.nome}</strong>
+                <div>
+                  <span className="modal-summary-label">Versão atual no terminal: </span>
+                  <span className={`modal-summary-ver ${isVersionBelowTarget(modalUpdateClient.versao, versaoAlvo) ? 'is-below' : 'is-ok'}`}>
+                    {modalUpdateClient.versao}
+                  </span>
+                </div>
               </div>
 
               <div className="form-group-clientes">
                 <label>Selecione a Nova Versão ou Digite uma Customizada:</label>
-                <select 
+                <CustomSelect
                   value={selectedNewVersion}
-                  onChange={(e) => setSelectedNewVersion(e.target.value)}
-                >
-                  {versoesCadastradas.map((ver, idx) => (
-                    <option key={idx} value={ver}>
-                      {ver} {ver === modalUpdateClient.versao ? '(Atual)' : ''}
-                    </option>
-                  ))}
-                  <option value="CUSTOM">➕ Digitar uma Nova Versão manual...</option>
-                </select>
+                  onChange={setSelectedNewVersion}
+                  options={updateClientVersionOptions}
+                  icon={<Layers size={14} />}
+                />
               </div>
 
               {selectedNewVersion === 'CUSTOM' && (
                 <div className="form-group-clientes" style={{ marginTop: '12px' }}>
                   <label>Digite o Número da Nova Versão (Ex: 04.12.00.01):</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ex: 04.12.00.01" 
+                  <input
+                    type="text"
+                    placeholder="Ex: 04.12.00.01"
                     value={customVersionInput}
                     onChange={(e) => setCustomVersionInput(e.target.value)}
                     autoFocus
@@ -872,8 +984,8 @@ const ControleVersoesClientes = ({ onBack }) => {
               )}
 
               <div className="modal-actions-clientes">
-                <button className="btn-compact-action btn-manage-ver" onClick={() => setModalUpdateClient(null)}>Cancelar</button>
-                <button className="btn-compact-action btn-new-client" onClick={handleUpdateClientVersion}>
+                <button type="button" className="btn-compact-action btn-manage-ver" onClick={() => setModalUpdateClient(null)}>Cancelar</button>
+                <button type="button" className="btn-compact-action btn-new-client" onClick={handleUpdateClientVersion}>
                   <Save size={15} /> Confirmar Atualização
                 </button>
               </div>
@@ -886,7 +998,7 @@ const ControleVersoesClientes = ({ onBack }) => {
       <AnimatePresence>
         {modalAddClient && (
           <div className="modal-overlay-clientes" onClick={() => setModalAddClient(false)}>
-            <motion.div 
+            <motion.div
               className="modal-content-clientes"
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.95, opacity: 0 }}
@@ -895,71 +1007,69 @@ const ControleVersoesClientes = ({ onBack }) => {
             >
               <div className="modal-header-clientes">
                 <h3><Plus size={20} style={{ color: 'var(--neon-cyan)' }} /> Adicionar Novo Cliente</h3>
-                <button className="btn-icon" onClick={() => setModalAddClient(false)}><X size={18} /></button>
+                <button type="button" className="btn-icon" onClick={() => setModalAddClient(false)}><X size={18} /></button>
               </div>
 
               <form onSubmit={handleSaveNewClient}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '12px' }}>
+                <div className="modal-grid-2col">
                   <div className="form-group-clientes">
                     <label>Num. / ID:</label>
-                    <input 
-                      type="text" 
-                      placeholder="Ex: 2500" 
+                    <input
+                      type="text"
+                      placeholder="Ex: 2500"
                       value={newClientForm.num}
-                      onChange={(e) => setNewClientForm({...newClientForm, num: e.target.value})}
+                      onChange={(e) => setNewClientForm({ ...newClientForm, num: e.target.value })}
                     />
                   </div>
                   <div className="form-group-clientes">
                     <label>Nome do Cliente:*</label>
-                    <input 
-                      type="text" 
-                      placeholder="Ex: MERCADO EXEMPLO" 
+                    <input
+                      type="text"
+                      placeholder="Ex: MERCADO EXEMPLO"
                       required
                       value={newClientForm.nome}
-                      onChange={(e) => setNewClientForm({...newClientForm, nome: e.target.value})}
+                      onChange={(e) => setNewClientForm({ ...newClientForm, nome: e.target.value })}
                     />
                   </div>
                 </div>
 
                 <div className="form-group-clientes">
                   <label>Endereço:</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ex: RUA BRASIL, 1000, CENTRO" 
+                  <input
+                    type="text"
+                    placeholder="Ex: RUA BRASIL, 1000, CENTRO"
                     value={newClientForm.endereco}
-                    onChange={(e) => setNewClientForm({...newClientForm, endereco: e.target.value})}
+                    onChange={(e) => setNewClientForm({ ...newClientForm, endereco: e.target.value })}
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                <div className="modal-grid-3col">
                   <div className="form-group-clientes">
                     <label>Versão Inicial:</label>
-                    <input 
-                      type="text" 
-                      placeholder="04.12.00.00" 
+                    <input
+                      type="text"
+                      placeholder="04.12.00.00"
                       value={newClientForm.versao}
-                      onChange={(e) => setNewClientForm({...newClientForm, versao: e.target.value})}
+                      onChange={(e) => setNewClientForm({ ...newClientForm, versao: e.target.value })}
                     />
                   </div>
                   <div className="form-group-clientes">
                     <label>Servidor:</label>
-                    <input 
-                      type="text" 
-                      placeholder="IMPLANTACAO" 
+                    <input
+                      type="text"
+                      placeholder="IMPLANTACAO"
                       value={newClientForm.servidor}
-                      onChange={(e) => setNewClientForm({...newClientForm, servidor: e.target.value})}
+                      onChange={(e) => setNewClientForm({ ...newClientForm, servidor: e.target.value })}
                     />
                   </div>
                   <div className="form-group-clientes">
                     <label>Situação:</label>
-                    <select 
+                    <CustomSelect
                       value={newClientForm.situacao}
-                      onChange={(e) => setNewClientForm({...newClientForm, situacao: e.target.value})}
-                    >
-                      <option value="Ativa">Ativa</option>
-                      <option value="Em implantação">EP (Em implantação)</option>
-                      <option value="Bloqueada">Bloqueada</option>
-                    </select>
+                      onChange={(val) => setNewClientForm({ ...newClientForm, situacao: val })}
+                      options={newClientSituacaoOptions}
+                      menuUp
+                    />
                   </div>
                 </div>
 
@@ -979,7 +1089,7 @@ const ControleVersoesClientes = ({ onBack }) => {
       <AnimatePresence>
         {modalManageVersions && (
           <div className="modal-overlay-clientes" onClick={() => setModalManageVersions(false)}>
-            <motion.div 
+            <motion.div
               className="modal-content-clientes"
               onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.95, opacity: 0 }}
@@ -988,49 +1098,41 @@ const ControleVersoesClientes = ({ onBack }) => {
             >
               <div className="modal-header-clientes">
                 <h3><Layers size={20} style={{ color: 'var(--neon-cyan)' }} /> Gerenciar Lista de Versões</h3>
-                <button className="btn-icon" onClick={() => setModalManageVersions(false)}><X size={18} /></button>
+                <button type="button" className="btn-icon" onClick={() => setModalManageVersions(false)}><X size={18} /></button>
               </div>
 
-              <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', margin: '0 0 12px 0' }}>
-                Adicione ou remova as versões que ficam disponíveis no dropdown de atualização de clientes, e defina a versão-alvo mínima de alerta.
+              <p className="modal-subtitle">
+                Adicione ou remova as versões disponíveis na atualização e defina a versão-alvo mínima de alerta.
               </p>
 
               <div className="target-version-box">
                 <div className="target-version-header">
-                  <label htmlFor="select-versao-alvo">Versão-Alvo Mínima (Referência de Alerta):</label>
+                  <label>Versão-Alvo Mínima (Referência de Alerta):</label>
                   <span className="target-active-badge">Alvo Atual: {versaoAlvo}</span>
                 </div>
-                <select
-                  id="select-versao-alvo"
-                  className="filter-select target-ver-select"
+                <CustomSelect
                   value={versaoAlvo}
-                  onChange={(e) => handleChangeVersaoAlvo(e.target.value)}
-                >
-                  {!versoesCadastradas.includes(versaoAlvo) && (
-                    <option value={versaoAlvo}>{versaoAlvo} (Alvo Atual)</option>
-                  )}
-                  {versoesCadastradas.map((ver, idx) => (
-                    <option key={idx} value={ver}>
-                      {ver} {ver === versaoAlvo ? '(Alvo Atual)' : ''}
-                    </option>
-                  ))}
-                </select>
+                  onChange={handleChangeVersaoAlvo}
+                  options={versaoAlvoOptions}
+                  icon={<ShieldAlert size={14} />}
+                />
               </div>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input 
-                  type="text" 
+              <div className="modal-add-version-row">
+                <input
+                  type="text"
                   className="input-new-version"
-                  placeholder="Ex: 04.12.01.00" 
+                  placeholder="Ex: 04.12.01.00"
                   value={newVersionToAdd}
                   onChange={(e) => setNewVersionToAdd(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddVersionGeneral()}
                 />
                 <button type="button" className="btn-compact-action btn-new-client" onClick={handleAddVersionGeneral}>
                   Adicionar
                 </button>
               </div>
 
-              <h4 style={{ marginTop: '18px', marginBottom: '8px', fontSize: '0.88rem' }}>Versões Cadastradas no Sistema ({versoesCadastradas.length}):</h4>
+              <h4 className="modal-section-heading">Versões Cadastradas no Sistema ({versoesCadastradas.length}):</h4>
               <div className="versions-list-grid">
                 {versoesCadastradas.map((ver, idx) => {
                   const isBelow = isVersionBelowTarget(ver, versaoAlvo);
@@ -1046,7 +1148,7 @@ const ControleVersoesClientes = ({ onBack }) => {
                       >
                         {isTarget ? 'Alvo ✓' : 'Alvo'}
                       </button>
-                      <button className="btn-remove-ver" onClick={() => handleRemoveVersionGeneral(ver)} title="Remover versão da lista">
+                      <button type="button" className="btn-remove-ver" onClick={() => handleRemoveVersionGeneral(ver)} title="Remover versão da lista">
                         <X size={14} />
                       </button>
                     </div>
@@ -1055,7 +1157,7 @@ const ControleVersoesClientes = ({ onBack }) => {
               </div>
 
               <div className="modal-actions-clientes">
-                <button className="btn-compact-action btn-new-client" onClick={() => setModalManageVersions(false)}>Concluído</button>
+                <button type="button" className="btn-compact-action btn-new-client" onClick={() => setModalManageVersions(false)}>Concluído</button>
               </div>
             </motion.div>
           </div>
@@ -1064,31 +1166,28 @@ const ControleVersoesClientes = ({ onBack }) => {
         {/* Modal de Observação e Etiquetas */}
         {modalObsClient && (
           <div className="modal-overlay-clientes" onClick={() => setModalObsClient(null)}>
-            <motion.div 
-              className="modal-content-clientes" 
+            <motion.div
+              className="modal-content-clientes modal-wide"
               onClick={e => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              style={{ maxWidth: '520px' }}
             >
               <div className="modal-header-clientes">
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>
-                    Observações e Status
-                  </h3>
-                  <p style={{ margin: '3px 0 0', fontSize: '0.84rem', color: 'var(--neon-cyan)', fontWeight: 700 }}>
+                  <h3>Observações e Status</h3>
+                  <p className="modal-client-meta">
                     {modalObsClient.nome} (Licença: {modalObsClient.num || modalObsClient.id})
                   </p>
                 </div>
-                <button className="btn-icon" onClick={() => setModalObsClient(null)}>
+                <button type="button" className="btn-icon" onClick={() => setModalObsClient(null)}>
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="modal-body-clientes" style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '12px' }}>
+              <div className="modal-body-stack">
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                  <label className="modal-section-label">
                     Ações e Status Rápidos (1 clique):
                   </label>
                   <div className="preset-tags-grid">
@@ -1114,8 +1213,7 @@ const ControleVersoesClientes = ({ onBack }) => {
                     ))}
                     <button
                       type="button"
-                      className="btn-preset-tag"
-                      style={{ color: '#94a3b8' }}
+                      className="btn-preset-tag btn-preset-clear"
                       onClick={() => {
                         setEtiquetaInput('');
                         setCorRowInput('');
@@ -1128,7 +1226,7 @@ const ControleVersoesClientes = ({ onBack }) => {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                  <label className="modal-section-label">
                     Cor da Linha na Tabela:
                   </label>
                   <div className="swatches-color-row">
@@ -1154,30 +1252,20 @@ const ControleVersoesClientes = ({ onBack }) => {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '4px' }}>
+                  <label className="modal-section-label">
                     Observações Livres (Anotações do Suporte/Dev):
                   </label>
                   <textarea
                     rows={4}
+                    className="modal-textarea-obs"
                     placeholder="Escreva detalhes técnicos, agendamentos com horário, notas sobre o cliente..."
                     value={obsInput}
                     onChange={(e) => setObsInput(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--border-light)',
-                      background: 'rgba(0,0,0,0.35)',
-                      color: 'var(--text-primary)',
-                      fontFamily: 'inherit',
-                      fontSize: '0.88rem',
-                      resize: 'vertical'
-                    }}
                   />
                 </div>
               </div>
 
-              <div className="modal-actions-clientes" style={{ marginTop: '16px' }}>
+              <div className="modal-actions-clientes">
                 <button type="button" className="btn-compact-action btn-manage-ver" onClick={() => setModalObsClient(null)}>
                   Cancelar
                 </button>
@@ -1188,36 +1276,36 @@ const ControleVersoesClientes = ({ onBack }) => {
             </motion.div>
           </div>
         )}
+
         {/* Modal de Preview de Importação */}
         {modalImportPreview && (
           <div className="modal-overlay-clientes" onClick={() => setModalImportPreview(null)}>
-            <motion.div 
-              className="modal-content-clientes" 
+            <motion.div
+              className="modal-content-clientes modal-import-changelog"
               onClick={e => e.stopPropagation()}
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              style={{ maxWidth: '600px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}
             >
               <div className="modal-header-clientes" style={{ flexShrink: 0 }}>
                 <h3><Upload size={20} style={{ color: 'var(--neon-cyan)' }} /> Changelog de Importação</h3>
-                <button className="btn-icon" onClick={() => setModalImportPreview(null)}><X size={18} /></button>
+                <button type="button" className="btn-icon" onClick={() => setModalImportPreview(null)}><X size={18} /></button>
               </div>
 
-              <div className="modal-body-clientes" style={{ overflowY: 'auto', flex: 1, padding: '10px 0', fontSize: '0.88rem' }}>
-                <p style={{ marginBottom: '12px', color: 'var(--text-secondary)' }}>
+              <div className="modal-changelog-scroll">
+                <p className="modal-subtitle">
                   A planilha foi processada. Abaixo está o resumo das alterações que serão feitas no banco de dados.
                   Clientes já existentes com dados idênticos foram ignorados.
                 </p>
 
-                <div style={{ marginBottom: '16px' }}>
-                  <h4 style={{ color: '#10b981', marginBottom: '8px' }}>
+                <div className="changelog-section">
+                  <h4 className="changelog-heading added">
                     Novos Clientes a serem Adicionados ({modalImportPreview.added.length})
                   </h4>
                   {modalImportPreview.added.length === 0 ? (
-                    <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Nenhum novo cliente encontrado.</span>
+                    <span className="changelog-empty">Nenhum novo cliente encontrado.</span>
                   ) : (
-                    <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-primary)' }}>
+                    <ul className="changelog-list">
                       {modalImportPreview.added.map((item, idx) => (
                         <li key={idx}><strong>{item.num}</strong> - {item.nome} {item.versao ? `(Versão: ${item.versao})` : ''}</li>
                       ))}
@@ -1225,18 +1313,18 @@ const ControleVersoesClientes = ({ onBack }) => {
                   )}
                 </div>
 
-                <div>
-                  <h4 style={{ color: '#eab308', marginBottom: '8px' }}>
+                <div className="changelog-section">
+                  <h4 className="changelog-heading updated">
                     Clientes Existentes com Alterações ({modalImportPreview.updated.length})
                   </h4>
                   {modalImportPreview.updated.length === 0 ? (
-                    <span style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Nenhuma alteração nos clientes existentes.</span>
+                    <span className="changelog-empty">Nenhuma alteração nos clientes existentes.</span>
                   ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div className="changelog-updated-list">
                       {modalImportPreview.updated.map((item, idx) => (
-                        <div key={idx} style={{ background: 'rgba(255,255,255,0.05)', padding: '10px', borderRadius: '6px' }}>
-                          <strong style={{ display: 'block', marginBottom: '4px' }}>{item.original.num} - {item.original.nome}</strong>
-                          <ul style={{ paddingLeft: '20px', margin: 0, color: 'var(--text-secondary)' }}>
+                        <div key={idx} className="modal-changelog-item">
+                          <strong>{item.original.num} - {item.original.nome}</strong>
+                          <ul>
                             {item.changes.map((change, cIdx) => (
                               <li key={cIdx}>{change}</li>
                             ))}
@@ -1248,16 +1336,15 @@ const ControleVersoesClientes = ({ onBack }) => {
                 </div>
               </div>
 
-              <div className="modal-actions-clientes" style={{ marginTop: '16px', flexShrink: 0 }}>
+              <div className="modal-actions-clientes" style={{ flexShrink: 0 }}>
                 <button type="button" className="btn-compact-action btn-manage-ver" onClick={() => setModalImportPreview(null)}>
                   Cancelar
                 </button>
-                <button 
-                  type="button" 
-                  className="btn-compact-action btn-new-client" 
+                <button
+                  type="button"
+                  className="btn-compact-action btn-new-client"
                   onClick={handleConfirmImport}
                   disabled={modalImportPreview.added.length === 0 && modalImportPreview.updated.length === 0}
-                  style={{ opacity: (modalImportPreview.added.length === 0 && modalImportPreview.updated.length === 0) ? 0.5 : 1 }}
                 >
                   <Save size={16} /> Confirmar Importação
                 </button>
