@@ -996,9 +996,13 @@ const ControleVersoesClientes = ({ onBack }) => {
               </p>
 
               <div className="target-version-box">
-                <label htmlFor="select-versao-alvo">Versão-Alvo Mínima (Referência de Alerta):</label>
+                <div className="target-version-header">
+                  <label htmlFor="select-versao-alvo">Versão-Alvo Mínima (Referência de Alerta):</label>
+                  <span className="target-active-badge">Alvo Atual: {versaoAlvo}</span>
+                </div>
                 <select
                   id="select-versao-alvo"
+                  className="filter-select target-ver-select"
                   value={versaoAlvo}
                   onChange={(e) => handleChangeVersaoAlvo(e.target.value)}
                 >
@@ -1016,12 +1020,12 @@ const ControleVersoesClientes = ({ onBack }) => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input 
                   type="text" 
+                  className="input-new-version"
                   placeholder="Ex: 04.12.01.00" 
                   value={newVersionToAdd}
                   onChange={(e) => setNewVersionToAdd(e.target.value)}
-                  style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border-light)', background: 'rgba(0,0,0,0.3)', color: 'var(--text-primary)' }}
                 />
-                <button className="btn-compact-action btn-new-client" onClick={handleAddVersionGeneral}>
+                <button type="button" className="btn-compact-action btn-new-client" onClick={handleAddVersionGeneral}>
                   Adicionar
                 </button>
               </div>
