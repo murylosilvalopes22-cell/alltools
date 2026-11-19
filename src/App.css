@@ -197,3 +197,50 @@
     display: none;
   }
 }
+
+/* Recent Tools Quick Access Bar */
+.recent-tools-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.recent-tools-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.recent-tools-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.recent-tool-chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border-glass);
+  background: var(--surface-main);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.recent-tool-chip:hover {
+  border-color: var(--primary-color);
+  background: rgba(var(--primary-color-rgb), 0.12);
+  transform: translateY(-1px);
+}

@@ -37,6 +37,9 @@ const ControleVersoesClientes = ({ onBack }) => {
     return defaultVersoes.sort();
   });
 
+  const [versaoAlvo, setVersaoAlvo] = useState("04.12.00.00");
+  const versaoAlvoCurta = useMemo(() => versaoAlvo.split('.').slice(0, 2).join('.'), [versaoAlvo]);
+
   // Filtros da tabela
   const [searchTerm, setSearchTerm] = useState('');
   const [filterVersao, setFilterVersao] = useState('');
@@ -262,12 +265,16 @@ const ControleVersoesClientes = ({ onBack }) => {
         if (data && data.versoesCadastradas && Array.isArray(data.versoesCadastradas)) {
           setVersoesCadastradas(data.versoesCadastradas);
         }
+        if (data && data.versaoAlvo) {
+          setVersaoAlvo(data.versaoAlvo);
+        }
       } else {
         const defaultVersoes = Array.from(new Set((initialClientesData || []).map(c => c.versao))).filter(Boolean).sort();
         try {
           await setDoc(docRef, {
             clientes: initialClientesData || [],
             versoesCadastradas: defaultVersoes,
+            versaoAlvo: "04.12.00.00",
             atualizadoEm: Date.now()
           });
         } catch (err) {
@@ -281,17 +288,24 @@ const ControleVersoesClientes = ({ onBack }) => {
     return () => unsubscribe();
   }, []);
 
-  const saveToFirebase = async (newClientes, newVersoes) => {
+  const saveToFirebase = async (newClientes, newVersoes, newAlvo = versaoAlvo) => {
     try {
       const docRef = doc(db, 'gestao_sistemas', 'controle_versoes_clientes');
       await setDoc(docRef, {
         clientes: newClientes,
         versoesCadastradas: newVersoes || versoesCadastradas,
+        versaoAlvo: newAlvo,
         atualizadoEm: Date.now()
       }, { merge: true });
     } catch (err) {
       console.error("Erro ao salvar no Firebase:", err);
     }
+  };
+
+  const handleChangeVersaoAlvo = async (novaAlvo) => {
+    if (!novaAlvo) return;
+    setVersaoAlvo(novaAlvo);
+    await saveToFirebase(clientes, versoesCadastradas, novaAlvo);
   };
 
   const situacoesUnicas = useMemo(() => {
@@ -316,7 +330,7 @@ const ControleVersoesClientes = ({ onBack }) => {
         (cliente.etiqueta && cliente.etiqueta.toLowerCase().includes(searchTerm.toLowerCase()))
       );
 
-      const isBelow = isVersionBelowTarget(cliente.versao, "04.12.00.00");
+      const isBelow = isVersionBelowTarget(cliente.versao, versaoAlvo);
 
       let versaoMatch = true;
       if (filterVersao === '') {
@@ -367,12 +381,12 @@ const ControleVersoesClientes = ({ onBack }) => {
       }
       return 0;
     });
-  }, [clientes, searchTerm, filterVersao, filterSituacao, filterTag, sortField, sortOrder]);
+  }, [clientes, searchTerm, filterVersao, filterSituacao, filterTag, sortField, sortOrder, versaoAlvo]);
 
   const totalClientes = clientes.length;
   const desatualizadosCount = useMemo(() => {
-    return clientes.filter(c => isVersionBelowTarget(c.versao, "04.12.00.00")).length;
-  }, [clientes]);
+    return clientes.filter(c => isVersionBelowTarget(c.versao, versaoAlvo)).length;
+  }, [clientes, versaoAlvo]);
   const atualizadosCount = totalClientes - desatualizadosCount;
   const atualizadosPercent = totalClientes > 0 ? Math.round((atualizadosCount / totalClientes) * 100) : 0;
 
@@ -535,16 +549,16 @@ const ControleVersoesClientes = ({ onBack }) => {
             type="button"
             className={`kpi-pill warning ${filterVersao === '' ? 'active-kpi' : ''}`}
             onClick={() => setFilterVersao('')}
-            title="Clique para filtrar apenas versões abaixo da 04.12"
+            title={`Clique para filtrar apenas versões abaixo da ${versaoAlvo}`}
           >
-            <span>&lt; 04.12:</span>
+            <span>&lt; {versaoAlvoCurta}:</span>
             <strong>{desatualizadosCount}</strong>
           </button>
           <button
             type="button"
             className={`kpi-pill success ${filterVersao === 'ONLY_OK' ? 'active-kpi' : ''}`}
             onClick={() => setFilterVersao('ONLY_OK')}
-            title="Clique para filtrar apenas clientes atualizados (≥ 04.12)"
+            title={`Clique para filtrar apenas clientes atualizados (≥ ${versaoAlvoCurta})`}
           >
             <span>Atualizados:</span>
             <strong>{atualizadosCount}</strong>
@@ -602,11 +616,11 @@ const ControleVersoesClientes = ({ onBack }) => {
             value={filterVersao}
             onChange={(e) => setFilterVersao(e.target.value)}
           >
-            <option value="">Padrão: Apenas Desatualizados (&lt; 04.11)</option>
+            <option value="">Padrão: Apenas Desatualizados (&lt; {versaoAlvoCurta})</option>
             <option value="ALL">Mostrar Todas as Versões ({totalClientes})</option>
-            <option value="ONLY_OK">Apenas Atualizados (≥ 04.12)</option>
+            <option value="ONLY_OK">Apenas Atualizados (≥ {versaoAlvoCurta})</option>
             {versoesCadastradas.map((ver, idx) => (
-              <option key={idx} value={ver}>{ver} {isVersionBelowTarget(ver, "04.12.00.00") ? '(< 04.12)' : ''}</option>
+              <option key={idx} value={ver}>{ver} {isVersionBelowTarget(ver, versaoAlvo) ? `(< ${versaoAlvoCurta})` : ''}</option>
             ))}
           </select>
 
@@ -642,7 +656,7 @@ const ControleVersoesClientes = ({ onBack }) => {
             onClick={() => setFilterVersao(filterVersao === '' ? 'ALL' : '')}
             title={filterVersao === '' ? 'Clique para mostrar todos os clientes (incluindo atualizados)' : 'Clique para filtrar apenas os desatualizados'}
           >
-            <AlertTriangle size={15} /> {filterVersao === '' ? 'Exibindo: < 04.12 (Clique p/ Todos)' : 'Filtrar Apenas < 04.12'}
+            <AlertTriangle size={15} /> {filterVersao === '' ? `Exibindo: < ${versaoAlvoCurta} (Clique p/ Todos)` : `Filtrar Apenas < ${versaoAlvoCurta}`}
           </button>
         </div>
       </div>
@@ -712,7 +726,7 @@ const ControleVersoesClientes = ({ onBack }) => {
                 </tr>
               ) : (
                 clientesFiltrados.map((cliente) => {
-                  const isBelow = isVersionBelowTarget(cliente.versao, "04.12.00.00");
+                  const isBelow = isVersionBelowTarget(cliente.versao, versaoAlvo);
                   const isTef = cliente.etiqueta === 'Stor Smart TEF';
                   const isUrgent = isBelow && isTef;
                   
@@ -765,7 +779,7 @@ const ControleVersoesClientes = ({ onBack }) => {
                       </td>
                       <td className="col-ver">
                         {isBelow ? (
-                          <span className={`badge-versao ${isUrgent ? 'urgent' : 'warning'}`} title="Abaixo da 04.12.00.00 — Precisa Atualizar!">
+                          <span className={`badge-versao ${isUrgent ? 'urgent' : 'warning'}`} title={`Abaixo da ${versaoAlvo} — Precisa Atualizar!`}>
                             {cliente.versao}
                           </span>
                         ) : (
@@ -780,7 +794,7 @@ const ControleVersoesClientes = ({ onBack }) => {
                             className={`btn-update-action ${isBelow ? 'warning-btn' : ''}`}
                             onClick={() => {
                               setModalUpdateClient(cliente);
-                              setSelectedNewVersion(versoesCadastradas[versoesCadastradas.length - 1] || '04.12.00.00');
+                              setSelectedNewVersion(versoesCadastradas[versoesCadastradas.length - 1] || versaoAlvo);
                               setCustomVersionInput('');
                             }}
                             title="Alterar Versão do Cliente"
@@ -824,7 +838,7 @@ const ControleVersoesClientes = ({ onBack }) => {
               <div style={{ marginBottom: '16px', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border-light)' }}>
                 <strong style={{ fontSize: '1rem', display: 'block', marginBottom: '2px' }}>{modalUpdateClient.nome}</strong>
                 <span style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>Versão Atual no terminal: </span>
-                <strong style={{ color: isVersionBelowTarget(modalUpdateClient.versao, "04.12.00.00") ? '#eab308' : '#10b981', fontSize: '0.94rem' }}>
+                <strong style={{ color: isVersionBelowTarget(modalUpdateClient.versao, versaoAlvo) ? '#eab308' : '#10b981', fontSize: '0.94rem' }}>
                   {modalUpdateClient.versao}
                 </strong>
               </div>
@@ -978,8 +992,26 @@ const ControleVersoesClientes = ({ onBack }) => {
               </div>
 
               <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', margin: '0 0 12px 0' }}>
-                Adicione ou remova as versões que ficam disponíveis no dropdown de atualização de clientes.
+                Adicione ou remova as versões que ficam disponíveis no dropdown de atualização de clientes, e defina a versão-alvo mínima de alerta.
               </p>
+
+              <div className="target-version-box">
+                <label htmlFor="select-versao-alvo">Versão-Alvo Mínima (Referência de Alerta):</label>
+                <select
+                  id="select-versao-alvo"
+                  value={versaoAlvo}
+                  onChange={(e) => handleChangeVersaoAlvo(e.target.value)}
+                >
+                  {!versoesCadastradas.includes(versaoAlvo) && (
+                    <option value={versaoAlvo}>{versaoAlvo} (Alvo Atual)</option>
+                  )}
+                  {versoesCadastradas.map((ver, idx) => (
+                    <option key={idx} value={ver}>
+                      {ver} {ver === versaoAlvo ? '(Alvo Atual)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input 
@@ -997,10 +1029,19 @@ const ControleVersoesClientes = ({ onBack }) => {
               <h4 style={{ marginTop: '18px', marginBottom: '8px', fontSize: '0.88rem' }}>Versões Cadastradas no Sistema ({versoesCadastradas.length}):</h4>
               <div className="versions-list-grid">
                 {versoesCadastradas.map((ver, idx) => {
-                  const isBelow = isVersionBelowTarget(ver, "04.12.00.00");
+                  const isBelow = isVersionBelowTarget(ver, versaoAlvo);
+                  const isTarget = ver === versaoAlvo;
                   return (
-                    <div key={idx} className={`version-chip ${isBelow ? 'below-0407' : 'ok-0407'}`}>
+                    <div key={idx} className={`version-chip ${isBelow ? 'below-0407' : 'ok-0407'} ${isTarget ? 'is-target-chip' : ''}`}>
                       <span>{ver}</span>
+                      <button
+                        type="button"
+                        className={`btn-set-target-ver ${isTarget ? 'active' : ''}`}
+                        onClick={() => handleChangeVersaoAlvo(ver)}
+                        title={isTarget ? 'Esta já é a versão-alvo mínima' : `Definir ${ver} como versão-alvo mínima`}
+                      >
+                        {isTarget ? 'Alvo ✓' : 'Alvo'}
+                      </button>
                       <button className="btn-remove-ver" onClick={() => handleRemoveVersionGeneral(ver)} title="Remover versão da lista">
                         <X size={14} />
                       </button>

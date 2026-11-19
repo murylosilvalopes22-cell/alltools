@@ -6,7 +6,7 @@ import './NcmConsult.css';
 
 const NcmConsult = ({ onBack, theme }) => {
   // Config States
-  const [showConfig, setShowConfig] = useState(true);
+  const [showConfig, setShowConfig] = useState(false);
   const [urls, setUrls] = useState({
     vigente: '',
     historica: '',
@@ -34,23 +34,28 @@ const NcmConsult = ({ onBack, theme }) => {
   const [resultsBatch, setResultsBatch] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [copied, setCopied] = useState(false);
+  const [copiedRowCode, setCopiedRowCode] = useState('');
   const [geminiContext, setGeminiContext] = useState(null);
 
-  // Load from LocalStorage
+  // Load from LocalStorage and auto-load CSV bases in background
   useEffect(() => {
     const savedVigente = localStorage.getItem('ncm_url-vigente');
     const savedHistorica = localStorage.getItem('ncm_url-historica');
     const savedFutura = localStorage.getItem('ncm_url-futura');
     const savedGemini = localStorage.getItem('ncm_gemini-token');
 
-    setUrls({
+    const initialUrls = {
       vigente: savedVigente || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vStrqWGyGz_2eHWs3vtV01_LNX6gFxG6Ist7Kw1HkgigLD-37XlfJ6qgpfR04v6ow/pub?gid=841706911&single=true&output=csv',
       historica: savedHistorica || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShpzC7-J6ZMPxNPp5lD1FifMIhC_Wb4SUGYVdr8QZnExEVfj1gSXh3cjmj5W680Q/pub?gid=2044435286&single=true&output=csv',
       futura: savedFutura || ''
-    });
+    };
+
+    setUrls(initialUrls);
     setTokens({
       gemini: savedGemini || ''
     });
+
+    loadBasesFromUrls(initialUrls, true);
   }, []);
 
   // Save to LocalStorage
@@ -64,7 +69,11 @@ const NcmConsult = ({ onBack, theme }) => {
   const copiarNcm = (ncm) => {
     navigator.clipboard.writeText(ncm);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedRowCode(ncm);
+    setTimeout(() => {
+      setCopied(false);
+      setCopiedRowCode('');
+    }, 2000);
   };
 
   const limparNCM = (ncmRaw) => ncmRaw.replace(/\D/g, '');
@@ -74,8 +83,7 @@ const NcmConsult = ({ onBack, theme }) => {
     return `${ncm.slice(0, 4)}.${ncm.slice(4, 6)}.${ncm.slice(6, 8)}`;
   };
 
-  const handleCarregarBases = async () => {
-    saveToLocal(urls, tokens);
+  const loadBasesFromUrls = async (targetUrls, silent = false) => {
     setIsLoadingBases(true);
     let loadedCount = 0;
     const newCsvData = { vigente: [], historica: [], futura: [] };
@@ -83,7 +91,7 @@ const NcmConsult = ({ onBack, theme }) => {
     setLoadingStatuses(newStatuses);
 
     for (const type of ['vigente', 'historica', 'futura']) {
-      const url = urls[type];
+      const url = targetUrls[type];
       if (!url) {
         newStatuses[type] = 'Nenhum link fornecido.';
         setLoadingStatuses({ ...newStatuses });
@@ -145,9 +153,14 @@ const NcmConsult = ({ onBack, theme }) => {
     setCsvData(newCsvData);
     setBasesCarregadas(loadedCount);
     setIsLoadingBases(false);
-    if (loadedCount > 0) {
+    if (!silent && loadedCount > 0) {
       setShowConfig(false);
     }
+  };
+
+  const handleCarregarBases = async () => {
+    saveToLocal(urls, tokens);
+    await loadBasesFromUrls(urls, false);
   };
 
   const fetchBrasilApi = async (ncm) => {
@@ -412,11 +425,12 @@ Produto a classificar: "${descricao}"`;
       let finalStatus = 'INATIVO';
       let statusColor = 'red';
       let badgeClass = 'red';
-      if (isCsvVigente && isApiVigente) {
+      const hasLocalCsv = csvData.vigente.length > 0;
+      if ((isCsvVigente || !hasLocalCsv) && isApiVigente) {
         finalStatus = 'VIGENTE';
         statusColor = 'green';
         badgeClass = 'green';
-      } else if (isApiVigente && !isCsvVigente) {
+      } else if (hasLocalCsv && isApiVigente && !isCsvVigente) {
         finalStatus = 'DESATUALIZADO';
         statusColor = 'amber';
         badgeClass = 'amber';
@@ -540,13 +554,36 @@ Produto a classificar: "${descricao}"`;
 
         {/* Search Section */}
         <div className="ncm-search-section">
-          {basesCarregadas === 0 && (
-            <div className="block-search-overlay">
-              <AlertTriangle />
-              <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Busca Bloqueada</h3>
-              <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)' }}>Carregue pelo menos uma base na etapa acima.</p>
-            </div>
-          )}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 14px',
+            borderRadius: '10px',
+            marginBottom: '14px',
+            fontSize: '0.84rem',
+            fontWeight: 600,
+            background: basesCarregadas > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(56, 189, 248, 0.1)',
+            border: basesCarregadas > 0 ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(56, 189, 248, 0.25)',
+            color: basesCarregadas > 0 ? '#10b981' : '#38bdf8'
+          }}>
+            {isLoadingBases ? (
+              <>
+                <RefreshCw size={15} className="animate-spin" />
+                <span>Sincronizando tabelas CSV da Receita em segundo plano... (Consulta BrasilAPI já disponível)</span>
+              </>
+            ) : basesCarregadas > 0 ? (
+              <>
+                <CheckCircle size={15} />
+                <span>Tabelas Receita Federal ({csvData.vigente.length} NCMs vigentes) + BrasilAPI prontas</span>
+              </>
+            ) : (
+              <>
+                <AlertTriangle size={15} />
+                <span>Modo BrasilAPI Pública ativo (Clique em Bancos de Dados acima se quiser recarregar os CSVs locais)</span>
+              </>
+            )}
+          </div>
 
           <div className="ncm-tabs">
             <button className={`ncm-tab ${activeTab === 'ncm' ? 'active' : ''}`} onClick={() => setActiveTab('ncm')}>
@@ -725,9 +762,10 @@ Produto a classificar: "${descricao}"`;
                       <div style={{ marginTop: '8px' }}>
                         {(() => {
                           const isApiVigente = (!resultsNcm.brasilRes?.data_fim || new Date(resultsNcm.brasilRes.data_fim) > new Date());
+                          const hasLocalCsv = csvData.vigente.length > 0;
                           const isCsvVigente = !!resultsNcm.matches.vigente;
                           
-                          if (isApiVigente && !isCsvVigente) {
+                          if (hasLocalCsv && isApiVigente && !isCsvVigente) {
                             return <span className="badge amber" style={{ fontSize: '1rem', padding: '6px 12px' }}>Consulta Não atualizada (Fora da Tabela)</span>;
                           }
                           if (isApiVigente) {
@@ -809,23 +847,42 @@ Produto a classificar: "${descricao}"`;
             )}
 
             {/* Brasil API Result */}
-            {resultsProd.brasil && resultsProd.brasil.length > 0 && (
+            {resultsProd.brasil && Array.isArray(resultsProd.brasil) && resultsProd.brasil.length > 0 && (
               <div className="result-card">
                 <div className="result-card-header" style={{ background: 'rgba(59, 130, 246, 0.1)' }}>
-                  <span style={{ color: '#3b82f6' }}>Base Oficial TIPI (Busca Textual Brasil API)</span>
+                  <span style={{ color: '#3b82f6' }}>Resultados Oficiais BrasilAPI (Nuvem)</span>
                 </div>
                 <div className="result-card-body" style={{ padding: 0 }}>
                   <table className="substitutos-table">
                     <tbody>
-                      {resultsProd.brasil.slice(0, 5).map((n, i) => (
-                        <tr key={i}>
-                          <td style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{formatarNCM(n.codigo)}</td>
-                          <td>{n.descricao}</td>
-                          <td style={{ textAlign: 'right' }}>
-                            <button className="btn-load" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => setNcmFromList(n.codigo)}>Analisar</button>
-                          </td>
-                        </tr>
-                      ))}
+                      {resultsProd.brasil.slice(0, 15).map((n, i) => {
+                        const cleanCode = limparNCM(n.codigo);
+                        return (
+                          <tr key={i}>
+                            <td style={{ fontWeight: 'bold', fontFamily: 'monospace' }}>{formatarNCM(cleanCode)}</td>
+                            <td>{n.descricao}</td>
+                            <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'inline-flex', gap: '6px' }}>
+                                <button
+                                  type="button"
+                                  className="btn-load"
+                                  style={{
+                                    padding: '6px 10px',
+                                    fontSize: '0.8rem',
+                                    background: copiedRowCode === cleanCode ? '#10b981' : 'rgba(148, 163, 184, 0.2)',
+                                    color: copiedRowCode === cleanCode ? '#ffffff' : 'var(--text-primary)'
+                                  }}
+                                  onClick={() => copiarNcm(cleanCode)}
+                                  title="Copiar código NCM sem pontos"
+                                >
+                                  {copiedRowCode === cleanCode ? <><CheckCircle size={13} /> Copiado!</> : <><Copy size={13} /> Copiar</>}
+                                </button>
+                                <button className="btn-load" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => setNcmFromList(cleanCode)}>Analisar</button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

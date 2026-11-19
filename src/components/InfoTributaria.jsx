@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Calculator, AlertTriangle, Building2, ChevronRight, FileText } from 'lucide-react';
+import React, { useState, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Calculator, AlertTriangle, Building2, ChevronRight, FileText, Search, Copy, Check } from 'lucide-react';
 import './InfoTributaria.css';
 
 const TAX_DATA = {
@@ -58,22 +58,78 @@ const TAX_DATA = {
   }
 };
 
-const InfoTributaria = ({ onBack }) => {
+const FREQUENT_CFOPS = [
+  { cfop: '5102', titulo: 'Venda de mercadoria (Estadual)', desc: 'Venda dentro do estado de produto tributado normal / isento.' },
+  { cfop: '5405', titulo: 'Venda com Substituição Tributária (Estadual)', desc: 'Saída interna de mercadoria com ICMS já retido por ST (CSOSN 500 / CST 60).' },
+  { cfop: '6102', titulo: 'Venda de mercadoria (Interestadual)', desc: 'Venda para fora do estado (operação nacional).' },
+  { cfop: '6403', titulo: 'Venda ST (Interestadual)', desc: 'Saída interestadual com substituição tributária.' },
+  { cfop: '1102', titulo: 'Compra para comercialização (Estadual)', desc: 'Entrada de nota de fornecedor dentro do mesmo estado.' },
+  { cfop: '1403', titulo: 'Compra com ST (Estadual)', desc: 'Entrada estadual de mercadoria sujeita à substituição tributária.' },
+  { cfop: '5202', titulo: 'Devolução de compra (Estadual)', desc: 'Devolução para fornecedor dentro do estado (tributação normal).' },
+  { cfop: '5411', titulo: 'Devolução de compra ST (Estadual)', desc: 'Devolução para fornecedor dentro do estado de mercadoria com ST.' },
+  { cfop: '1202', titulo: 'Devolução de venda (Estadual)', desc: 'Entrada de mercadoria devolvida pelo cliente (tributação normal).' },
+  { cfop: '1411', titulo: 'Devolução de venda ST (Estadual)', desc: 'Entrada de devolução de cliente de mercadoria com ST.' },
+  { cfop: '5910', titulo: 'Bonificação / Doação / Brinde', desc: 'Remessa estadual de mercadoria em bonificação ou brinde sem cobrança.' },
+  { cfop: '5949', titulo: 'Outra saída não especificada', desc: 'Remessas diversas, garantias ou operações sem CFOP próprio.' },
+  { cfop: '1556', titulo: 'Compra para uso ou consumo', desc: 'Entrada estadual de material de uso interno da loja (não revenda).' },
+  { cfop: '5929', titulo: 'NF-e referenciando Cupom / NFC-e', desc: 'Emissão de NF-e modelo 55 para acobertar NFC-e já emitida no PDV.' }
+];
+
+const CFOP_COLUMNS = [
+  { key: 'saidaEst', category: 'SAÍDA', uf: 'Estadual' },
+  { key: 'saidaNac', category: 'SAÍDA', uf: 'Nacional' },
+  { key: 'entEst', category: 'ENTRADA', uf: 'Estadual' },
+  { key: 'entNac', category: 'ENTRADA', uf: 'Nacional' },
+  { key: 'devSaidaEst', category: 'DEV. SAÍDA', uf: 'Estadual' },
+  { key: 'devSaidaNac', category: 'DEV. SAÍDA', uf: 'Nacional' },
+  { key: 'devEntEst', category: 'DEV. ENTRADA', uf: 'Estadual' },
+  { key: 'devEntNac', category: 'DEV. ENTRADA', uf: 'Nacional' }
+];
+
+const InfoTributaria = () => {
   const [activeRegime, setActiveRegime] = useState('MEI');
   const [hoveredInfo, setHoveredInfo] = useState(null);
+  const [copiedBanner, setCopiedBanner] = useState(null);
+  const [cfopSearch, setCfopSearch] = useState('');
+  const [copiedGuideCfop, setCopiedGuideCfop] = useState('');
+  const copyTimerRef = useRef(null);
 
   const data = TAX_DATA[activeRegime];
 
   const handleCellHover = (cst, category, uf, value) => {
     if (value) {
-      setHoveredInfo(`${activeRegime} > ${cst.split(' -')[0]} > ${category} > ${uf}: ${value}`);
+      setHoveredInfo(`${activeRegime} > ${cst.split(' -')[0]} > ${category} > ${uf}: ${value} (Clique para copiar)`);
     } else {
       setHoveredInfo(null);
     }
   };
 
+  const handleCopyCfop = (value) => {
+    if (!value) return;
+    navigator.clipboard.writeText(value).then(() => {
+      setCopiedBanner(`✅ CFOP ${value} copiado para a área de transferência!`);
+      setCopiedGuideCfop(value);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => {
+        setCopiedBanner(null);
+        setCopiedGuideCfop('');
+      }, 1800);
+    });
+  };
+
+  const filteredFrequentCfops = useMemo(() => {
+    if (!cfopSearch.trim()) return FREQUENT_CFOPS;
+    const norm = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const q = norm(cfopSearch);
+    return FREQUENT_CFOPS.filter(
+      (item) => item.cfop.includes(q) || norm(item.titulo).includes(q) || norm(item.desc).includes(q)
+    );
+  }, [cfopSearch]);
+
+  const bannerMessage = copiedBanner || hoveredInfo;
+
   return (
-    <motion.div 
+    <motion.div
       className="tax-info-container"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -92,8 +148,8 @@ const InfoTributaria = ({ onBack }) => {
           <h2><Building2 size={24} /> Regimes</h2>
           <nav className="tax-nav">
             {Object.keys(TAX_DATA).map(key => (
-              <button 
-                key={key} 
+              <button
+                key={key}
                 className={`tax-nav-btn ${activeRegime === key ? 'active' : ''}`}
                 onClick={() => setActiveRegime(key)}
               >
@@ -112,16 +168,16 @@ const InfoTributaria = ({ onBack }) => {
             ) : (
               <p>{data.description}</p>
             )}
-            
+
             <div className="tax-badges">
-              <span className="tax-badge bg-blue"><FileText size={16}/> NF-e: {data.nfe}</span>
-              <span className="tax-badge bg-indigo"><FileText size={16}/> NFC-e: {data.nfce}</span>
-              <span className="tax-badge bg-green"><Calculator size={16}/> {data.pisCofins}</span>
+              <span className="tax-badge bg-blue"><FileText size={16} /> NF-e: {data.nfe}</span>
+              <span className="tax-badge bg-indigo"><FileText size={16} /> NFC-e: {data.nfce}</span>
+              <span className="tax-badge bg-green"><Calculator size={16} /> {data.pisCofins}</span>
             </div>
-            
+
             <div className="hover-info-container">
-              <div className={`hover-info-banner ${hoveredInfo ? 'visible' : ''}`}>
-                {hoveredInfo || "Passe o mouse sobre um CFOP para ver detalhes."}
+              <div className={`hover-info-banner ${bannerMessage ? 'visible' : ''} ${copiedBanner ? 'copied-state' : ''}`}>
+                {bannerMessage || "Passe o mouse sobre um CFOP para ver detalhes ou clique para copiar."}
               </div>
             </div>
           </div>
@@ -151,18 +207,72 @@ const InfoTributaria = ({ onBack }) => {
                 {data.rules.map((rule, idx) => (
                   <tr key={idx}>
                     <td className="cst-cell">{rule.cst}</td>
-                    <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'SAÍDA', 'Estadual', rule.saidaEst)} onMouseLeave={() => setHoveredInfo(null)}>{rule.saidaEst}</td>
-                    <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'SAÍDA', 'Nacional', rule.saidaNac)} onMouseLeave={() => setHoveredInfo(null)}>{rule.saidaNac}</td>
-                    <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'ENTRADA', 'Estadual', rule.entEst)} onMouseLeave={() => setHoveredInfo(null)}>{rule.entEst}</td>
-                    <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'ENTRADA', 'Nacional', rule.entNac)} onMouseLeave={() => setHoveredInfo(null)}>{rule.entNac}</td>
-                    {rule.devSaidaEst && <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'DEV. SAÍDA', 'Estadual', rule.devSaidaEst)} onMouseLeave={() => setHoveredInfo(null)}>{rule.devSaidaEst}</td>}
-                    {rule.devSaidaEst && <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'DEV. SAÍDA', 'Nacional', rule.devSaidaNac)} onMouseLeave={() => setHoveredInfo(null)}>{rule.devSaidaNac}</td>}
-                    {rule.devEntEst && <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'DEV. ENTRADA', 'Estadual', rule.devEntEst)} onMouseLeave={() => setHoveredInfo(null)}>{rule.devEntEst}</td>}
-                    {rule.devEntEst && <td className="hoverable-cell" onMouseEnter={() => handleCellHover(rule.cst, 'DEV. ENTRADA', 'Nacional', rule.devEntNac)} onMouseLeave={() => setHoveredInfo(null)}>{rule.devEntNac}</td>}
+                    {CFOP_COLUMNS.map((col) => {
+                      const val = rule[col.key];
+                      if (!val) return null;
+                      return (
+                        <td
+                          key={col.key}
+                          className="hoverable-cell"
+                          onMouseEnter={() => handleCellHover(rule.cst, col.category, col.uf, val)}
+                          onMouseLeave={() => setHoveredInfo(null)}
+                          onClick={() => handleCopyCfop(val)}
+                          title={`Clique para copiar CFOP ${val}`}
+                        >
+                          {val}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Guia Rápido / Busca de CFOPs Frequentes */}
+          <div className="cfop-guide-section">
+            <div className="cfop-guide-header">
+              <div>
+                <h3>Consulta Rápida de Operações &amp; CFOPs Frequentes</h3>
+                <p>Busque por código ou operação (ex: bonificação, uso e consumo, cupom referenciado) e clique para copiar.</p>
+              </div>
+              <div className="cfop-guide-search">
+                <Search size={16} />
+                <input
+                  type="text"
+                  placeholder="Buscar CFOP ou operação..."
+                  value={cfopSearch}
+                  onChange={(e) => setCfopSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="cfop-guide-grid">
+              {filteredFrequentCfops.map((item) => {
+                const isCopied = copiedGuideCfop === item.cfop;
+                return (
+                  <button
+                    key={item.cfop}
+                    type="button"
+                    className={`cfop-guide-card ${isCopied ? 'copied' : ''}`}
+                    onClick={() => handleCopyCfop(item.cfop)}
+                    title={`Clique para copiar o CFOP ${item.cfop}`}
+                  >
+                    <div className="cfop-guide-card-top">
+                      <span className="cfop-code-pill">{item.cfop}</span>
+                      <span className="cfop-copy-indicator">
+                        {isCopied ? <><Check size={13} /> Copiado</> : <><Copy size={13} /> Copiar</>}
+                      </span>
+                    </div>
+                    <strong>{item.titulo}</strong>
+                    <small>{item.desc}</small>
+                  </button>
+                );
+              })}
+              {filteredFrequentCfops.length === 0 && (
+                <p className="cfop-guide-empty">Nenhum CFOP encontrado para "{cfopSearch}".</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

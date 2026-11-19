@@ -297,3 +297,266 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Abas de Modo (CNPJ vs CEP & IBGE) */
+.dossie-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dossie-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme='light'] .dossie-tab-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.dossie-tab-btn:hover {
+  color: var(--text-primary);
+  border-color: rgba(96, 165, 250, 0.45);
+}
+
+.dossie-tab-btn.active {
+  background: rgba(59, 130, 246, 0.18);
+  border-color: #3b82f6;
+  color: var(--text-primary);
+}
+
+/* Histórico de CNPJs Recentes */
+.recent-cnpj-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: -12px;
+}
+
+.recent-cnpj-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.recent-cnpj-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 240px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme='light'] .recent-cnpj-chip {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.recent-cnpj-chip:hover {
+  border-color: #60a5fa;
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.recent-cnpj-chip strong {
+  font-family: monospace;
+  font-size: 0.76rem;
+  color: #60a5fa;
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .recent-cnpj-chip strong {
+  color: #2563eb;
+}
+
+.recent-cnpj-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+
+/* Cópia em 1 clique nas linhas de dados */
+.data-row.copyable {
+  cursor: pointer;
+  padding: 6px 8px 10px;
+  margin: 0 -8px;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+}
+
+.data-row.copyable:hover {
+  background: rgba(96, 165, 250, 0.08);
+}
+
+.copied-inline-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(16, 185, 129, 0.18);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.copy-hint-caption {
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: -12px 0 0 0;
+}
+
+/* Aba CEP & IBGE */
+.ibge-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 850px) {
+  .ibge-mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ibge-cep-row {
+  display: flex;
+  gap: 10px;
+}
+
+.ibge-cep-row input,
+.ibge-search-panel input,
+.ibge-search-panel select {
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+[data-theme='light'] .ibge-cep-row input,
+[data-theme='light'] .ibge-search-panel input,
+[data-theme='light'] .ibge-search-panel select {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+.ibge-cep-row input {
+  flex: 1;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.compact-search-btn {
+  padding: 0 18px;
+  font-size: 0.94rem;
+}
+
+.ibge-search-panel {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ibge-search-panel select {
+  width: 84px;
+  font-weight: 700;
+}
+
+.ibge-search-panel input {
+  flex: 1;
+}
+
+.ibge-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 310px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.ibge-city-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+[data-theme='light'] .ibge-city-item {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.ibge-city-item:hover {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.ibge-city-item.copied {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.ibge-city-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ibge-city-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #38bdf8;
+  flex-shrink: 0;
+}
+
+[data-theme='light'] .ibge-city-code {
+  color: #0284c7;
+}

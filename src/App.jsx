@@ -43,7 +43,7 @@ import ThanosEasterEgg from './components/ThanosEasterEgg';
 // import Bandeirinhas from './components/Bandeirinhas';
 // import Fogueira from './components/Fogueira';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { LayoutDashboard, Save, RotateCcw, BarChart3, MessageSquarePlus, LogOut, Search, Star, X } from 'lucide-react';
+import { LayoutDashboard, Save, RotateCcw, BarChart3, MessageSquarePlus, LogOut, Search, Star, X, Clock } from 'lucide-react';
 import { AVAILABLE_TOOLS } from './data/toolsList';
 import { usePreferences } from './contexts/PreferencesContext';
 import { useAuth } from './contexts/AuthContext';
@@ -90,6 +90,35 @@ const AdvancedSuspenseFallback = () => {
   );
 };
 
+const VIEW_TO_TOOL_ID = {
+  dossie: 'dossie',
+  ncmConsult: 'ncm',
+  qr: 'qr',
+  danfe: 'nfe',
+  imgConv: 'imgConv',
+  stationConfig: 'stationConfig',
+  serverSwap: 'serverSwap',
+  dutySchedule: 'dutySchedule',
+  anydesk: 'anydesk',
+  links: 'links',
+  taskOrganizer: 'taskOrganizer',
+  updateBoard: 'updateBoard',
+  rejeicoes: 'rejeicoes',
+  caseStudies: 'caseStudies',
+  feedbackBoard: 'feedbackBoard',
+  calculadoraIbsCbs: 'calculadora-ibscbs',
+  calculadoraSped: 'calculadora-sped',
+  infoTributaria: 'infoTributaria',
+  planilhaTributacao: 'planilhaTributacao',
+  versoesSistemas: 'versoesSistemas',
+  editorEtiquetas: 'editorEtiquetas',
+  leitorXmlFiscal: 'leitorXmlFiscal',
+  conversorImgDoc: 'conversorImgDoc',
+  gestorSysPdv: 'gestorSysPdv',
+  glossario: 'glossario',
+  controleVersoesClientes: 'controleVersoesClientes'
+};
+
 function App() {
   const { preferences } = usePreferences();
   const { currentUser, userData, logout } = useAuth();
@@ -100,6 +129,14 @@ function App() {
   const [favorites, setFavorites] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('suporte_favorite_tools') || '[]');
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  });
+  const [recentTools, setRecentTools] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('suporte_recent_tools') || '[]');
       return Array.isArray(saved) ? saved : [];
     } catch {
       return [];
@@ -168,12 +205,31 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isDevMode, activeView]);
 
+  useEffect(() => {
+    if (!currentUser?.uid || !userData) return;
+
+    if (Array.isArray(userData.favoriteTools)) {
+      setFavorites(userData.favoriteTools);
+      localStorage.setItem('suporte_favorite_tools', JSON.stringify(userData.favoriteTools));
+    } else if (favorites.length > 0) {
+      updateDoc(doc(db, 'usuarios_aprovados', currentUser.uid), { favoriteTools: favorites }).catch(() => {});
+    }
+
+    if (Array.isArray(userData.recentTools)) {
+      setRecentTools(userData.recentTools);
+      localStorage.setItem('suporte_recent_tools', JSON.stringify(userData.recentTools));
+    }
+  }, [currentUser?.uid, userData]);
+
   const toggleFavorite = (toolId) => {
     setFavorites((prev) => {
       const next = prev.includes(toolId)
         ? prev.filter((id) => id !== toolId)
         : [...prev, toolId];
       localStorage.setItem('suporte_favorite_tools', JSON.stringify(next));
+      if (currentUser?.uid) {
+        updateDoc(doc(db, 'usuarios_aprovados', currentUser.uid), { favoriteTools: next }).catch(() => {});
+      }
       return next;
     });
   };
@@ -218,6 +274,19 @@ function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
     localStorage.setItem('lastActiveView', activeView);
+
+    const toolId = VIEW_TO_TOOL_ID[activeView];
+    if (toolId) {
+      setRecentTools((prev) => {
+        if (prev[0] === toolId) return prev;
+        const next = [toolId, ...prev.filter((id) => id !== toolId)].slice(0, 4);
+        localStorage.setItem('suporte_recent_tools', JSON.stringify(next));
+        if (currentUser?.uid) {
+          updateDoc(doc(db, 'usuarios_aprovados', currentUser.uid), { recentTools: next }).catch(() => {});
+        }
+        return next;
+      });
+    }
     
     const trackView = async () => {
       // Se tivermos uma view aberta anterior, vamos atualizar a duration dela
@@ -548,6 +617,30 @@ function App() {
                     )}
                   </div>
                 </div>
+
+                {recentTools.length > 0 && !searchQuery && activeCategory === 'Todas' && (
+                  <div className="recent-tools-bar">
+                    <span className="recent-tools-label">
+                      <Clock size={13} /> Recentes:
+                    </span>
+                    <div className="recent-tools-list">
+                      {recentTools
+                        .map((id) => AVAILABLE_TOOLS.find((t) => t.id === id))
+                        .filter(Boolean)
+                        .map((tool) => (
+                          <button
+                            key={tool.id}
+                            type="button"
+                            className="recent-tool-chip"
+                            onClick={() => handleToolAction(tool.actionKey)}
+                            title={tool.desc}
+                          >
+                            {tool.title}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
 
                 <BentoGrid 
                   isEditing={isEditing}

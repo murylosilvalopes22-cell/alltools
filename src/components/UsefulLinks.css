@@ -219,3 +219,240 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Decodificador de Chave NF-e / NFC-e */
+.key-decoder-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+[data-theme="light"] .key-decoder-panel {
+  background: rgba(124, 58, 237, 0.04);
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+.key-decoder-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.key-decoder-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.96rem;
+  color: var(--text-primary);
+}
+
+.key-decoder-title svg {
+  color: var(--primary);
+}
+
+.key-len-badge {
+  font-family: monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.14);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.key-len-badge.complete {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.key-decoder-input-row,
+.links-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="light"] .key-decoder-input-row,
+[data-theme="light"] .links-filter-bar {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.links-filter-bar {
+  margin-bottom: 18px;
+}
+
+.links-filter-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.key-decoder-input-row input,
+.links-filter-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.92rem;
+}
+
+.key-decoder-input-row input {
+  font-family: monospace;
+}
+
+.key-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(128, 128, 128, 0.2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.key-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.key-hint-error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.key-decoded-result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.key-decoded-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 10px;
+}
+
+.decoded-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 9px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+[data-theme="light"] .decoded-item {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.decoded-item small {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.decoded-item strong {
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.decoded-item strong.dv-ok {
+  color: #10b981;
+}
+
+.decoded-item strong.dv-err {
+  color: #ef4444;
+}
+
+.key-decoded-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.key-copy-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.14);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.key-copy-action-btn:hover {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.link-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.copy-link-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+[data-theme="light"] .copy-link-btn {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.copy-link-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(139, 92, 246, 0.14);
+}
+
+.copy-link-btn.copied {
+  border-color: #10b981;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+}
