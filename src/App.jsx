@@ -43,7 +43,8 @@ import ThanosEasterEgg from './components/ThanosEasterEgg';
 // import Bandeirinhas from './components/Bandeirinhas';
 // import Fogueira from './components/Fogueira';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { LayoutDashboard, Save, RotateCcw, BarChart3, MessageSquarePlus, LogOut, Search } from 'lucide-react';
+import { LayoutDashboard, Save, RotateCcw, BarChart3, MessageSquarePlus, LogOut, Search, Star, X } from 'lucide-react';
+import { AVAILABLE_TOOLS } from './data/toolsList';
 import { usePreferences } from './contexts/PreferencesContext';
 import { useAuth } from './contexts/AuthContext';
 import AuthScreen from './components/AuthScreen';
@@ -96,6 +97,15 @@ function App() {
   const [activeView, setActiveView] = useState(() => localStorage.getItem('lastActiveView') || 'dashboard');
   const [activeCategory, setActiveCategory] = useState('Todas');
   const [searchQuery, setSearchQuery] = useState('');
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('suporte_favorite_tools') || '[]');
+      return Array.isArray(saved) ? saved : [];
+    } catch {
+      return [];
+    }
+  });
+  const searchInputRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [isDevMode, setIsDevMode] = useState(() => localStorage.getItem('isDevMode') === 'true');
@@ -138,11 +148,35 @@ function App() {
         } else {
           setShowDevModal(true);
         }
+        return;
+      }
+
+      if (activeView === 'dashboard') {
+        const isCtrlK = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k';
+        const tagName = document.activeElement?.tagName;
+        const isTyping = tagName === 'INPUT' || tagName === 'TEXTAREA' || document.activeElement?.isContentEditable;
+        const isSlash = e.key === '/' && !isTyping && !e.ctrlKey && !e.metaKey && !e.altKey;
+
+        if (isCtrlK || isSlash) {
+          e.preventDefault();
+          searchInputRef.current?.focus();
+          searchInputRef.current?.select();
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDevMode]);
+  }, [isDevMode, activeView]);
+
+  const toggleFavorite = (toolId) => {
+    setFavorites((prev) => {
+      const next = prev.includes(toolId)
+        ? prev.filter((id) => id !== toolId)
+        : [...prev, toolId];
+      localStorage.setItem('suporte_favorite_tools', JSON.stringify(next));
+      return next;
+    });
+  };
 
   const handleDevSuccess = () => {
     setIsDevMode(true);
@@ -449,45 +483,69 @@ function App() {
               key="dashboard"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
+              style={{ width: '100%', maxWidth: '1200px' }}
             >
-              <div style={{ width: '100%', maxWidth: '1200px', display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '20px' }}>
+              <div className="dashboard-main-container">
                 {/* Advanced Filter Bar */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {['Todas', 'Fiscal', 'Infra', 'Gestão', 'Utilitários'].map(cat => (
-                      <button 
-                        key={cat}
-                        className={`task-notification-btn ${activeCategory === cat ? 'active' : ''}`}
-                        style={{ 
-                          width: 'fit-content', 
-                          border: activeCategory === cat ? '1px solid #a855f7' : '1px solid rgba(255,255,255,0.1)',
-                          background: activeCategory === cat ? 'rgba(168, 85, 247, 0.1)' : 'rgba(0,0,0,0.3)',
-                          color: activeCategory === cat ? '#fff' : '#aaa'
-                        }}
-                        onClick={() => setActiveCategory(cat)}
-                      >
-                        <span className="feedback-text" style={{ display: 'inline-block', margin: 0 }}>{cat}</span>
-                      </button>
-                    ))}
+                <div className="dashboard-toolbar">
+                  <div className="category-filter-group">
+                    {['Todas', 'Favoritos', 'Fiscal', 'Infra', 'Gestão', 'Utilitários'].map(cat => {
+                      const count =
+                        cat === 'Todas'
+                          ? AVAILABLE_TOOLS.length
+                          : cat === 'Favoritos'
+                            ? favorites.length
+                            : AVAILABLE_TOOLS.filter(t => t.category === cat).length;
+
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          className={`category-filter-btn ${activeCategory === cat ? 'active' : ''}`}
+                          onClick={() => setActiveCategory(cat)}
+                        >
+                          {cat === 'Favoritos' && (
+                            <Star size={14} fill={activeCategory === 'Favoritos' || favorites.length > 0 ? '#f59e0b' : 'none'} style={{ color: '#f59e0b' }} />
+                          )}
+                          <span>{cat}</span>
+                          <span className="category-count-badge">{count}</span>
+                        </button>
+                      );
+                    })}
                   </div>
 
-                  <div className="task-notification-btn" style={{ flex: '1', minWidth: '250px', maxWidth: '400px', cursor: 'text', background: 'rgba(0,0,0,0.3)' }}>
-                    <Search size={18} style={{ color: '#a855f7' }} />
-                    <input 
+                  <div className="dashboard-search-box" onClick={() => searchInputRef.current?.focus()}>
+                    <Search size={17} className="dashboard-search-icon" />
+                    <input
+                      ref={searchInputRef}
                       type="text"
                       placeholder="Buscar ferramentas..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{ 
-                        background: 'transparent', 
-                        border: 'none', 
-                        color: '#fff', 
-                        width: '100%', 
-                        outline: 'none', 
-                        fontSize: '1rem',
-                        fontFamily: 'inherit'
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                          setSearchQuery('');
+                          searchInputRef.current?.blur();
+                        }
                       }}
                     />
+                    {searchQuery ? (
+                      <button
+                        type="button"
+                        className="search-clear-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSearchQuery('');
+                          searchInputRef.current?.focus();
+                        }}
+                        title="Limpar busca"
+                        aria-label="Limpar busca"
+                      >
+                        <X size={15} />
+                      </button>
+                    ) : (
+                      <kbd className="search-shortcut-kbd" title="Pressione Ctrl + K para buscar">Ctrl K</kbd>
+                    )}
                   </div>
                 </div>
 
@@ -496,6 +554,12 @@ function App() {
                   isDevMode={isDevMode}
                   activeCategory={activeCategory}
                   searchQuery={searchQuery}
+                  favorites={favorites}
+                  onToggleFavorite={toggleFavorite}
+                  onClearFilters={() => {
+                    setActiveCategory('Todas');
+                    setSearchQuery('');
+                  }}
                 resetTrigger={resetTrigger}
                 onOpenQR={() => setActiveView('qr')} 
                 onOpenImgConv={() => setActiveView('imgConv')}

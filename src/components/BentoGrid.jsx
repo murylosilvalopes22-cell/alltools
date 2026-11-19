@@ -8,7 +8,8 @@ import {
   Images, 
   Download, 
   Info, 
-  Sparkles, 
+  Star,
+  ArrowUpRight,
   MonitorCog,
   ServerCog,
   CalendarClock,
@@ -64,6 +65,13 @@ import './BentoAnimations.css';
 
 const ICONS = {
   FileText, BrainCircuit, QrCode, Images, MonitorCog, ServerCog, CalendarClock, Download, DatabaseZap, ListTodo, ClipboardList, MessageSquarePlus, FileCode2, BookOpen, Lightbulb, FileSpreadsheet, Server, Calculator, Printer, MonitorPlay, FileEdit, BookA, FileCheck2, ListFilter, Users, ShieldAlert, CheckCircle2, AlertTriangle, Layers, RefreshCw
+};
+
+const CATEGORY_ACCENTS = {
+  'Fiscal': { bg: 'rgba(56, 189, 248, 0.08)', color: '#38bdf8', border: 'rgba(56, 189, 248, 0.18)' },
+  'Infra': { bg: 'rgba(16, 185, 129, 0.08)', color: '#10b981', border: 'rgba(16, 185, 129, 0.18)' },
+  'Gestão': { bg: 'rgba(245, 158, 11, 0.08)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.18)' },
+  'Utilitários': { bg: 'rgba(167, 139, 250, 0.08)', color: '#a78bfa', border: 'rgba(167, 139, 250, 0.18)' }
 };
 
 import { AVAILABLE_TOOLS } from '../data/toolsList';
@@ -160,7 +168,7 @@ const SortableBentoItem = ({ item, isEditing, onRemove, renderToolInner, isLarge
 };
 
 const BentoGrid = (props) => {
-  const { isEditing, resetTrigger, activeCategory = 'Todas', searchQuery = '' } = props;
+  const { isEditing, resetTrigger, activeCategory = 'Todas', searchQuery = '', favorites = [], onToggleFavorite, onClearFilters } = props;
   const [items, setItems] = useState([]);
   const [hiddenItems, setHiddenItems] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -334,27 +342,71 @@ const BentoGrid = (props) => {
     };
     item.onClick = itemProps.onClick;
 
+    const catAccent = CATEGORY_ACCENTS[item.category] || {
+      bg: 'rgba(148, 163, 184, 0.08)',
+      color: '#94a3b8',
+      border: 'rgba(148, 163, 184, 0.2)'
+    };
+    const isFav = favorites.includes(item.id);
+
+    const renderCardMeta = (extraStyle = {}) => (
+      <div className="card-top-meta" style={extraStyle}>
+        {item.status ? (
+          <div
+            className="status-badge is-wip"
+            style={{
+              color: item.statusColor || undefined,
+              borderColor: item.statusColor ? `${item.statusColor}50` : undefined,
+              background: item.statusColor ? `${item.statusColor}15` : undefined
+            }}
+          >
+            {item.status}
+          </div>
+        ) : (
+          <span
+            className="category-tag-pill"
+            style={{
+              color: catAccent.color,
+              background: catAccent.bg,
+              borderColor: catAccent.border
+            }}
+          >
+            <span className="category-dot" style={{ backgroundColor: catAccent.color }} />
+            {item.category}
+          </span>
+        )}
+        {!isEditing && (
+          <>
+            <button
+              type="button"
+              className={`fav-star-btn ${isFav ? 'is-fav' : ''}`}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggleFavorite?.(item.id);
+              }}
+              title={isFav ? 'Remover dos favoritos' : 'Fixar nos favoritos'}
+              aria-label={isFav ? `Remover ${item.title} dos favoritos` : `Fixar ${item.title} nos favoritos`}
+            >
+              <Star size={14} fill={isFav ? '#f59e0b' : 'none'} />
+            </button>
+            <ArrowUpRight size={15} className="card-open-arrow" aria-hidden="true" />
+          </>
+        )}
+      </div>
+    );
+
     if (isLarge) {
       return (
         <>
           <div className="tool-inner flex-row" style={{ translateZ: item.innerZ }}>
             <div className="download-info">
-              <div 
-                className={`status-badge ${!item.status ? 'ping-active' : ''}`} 
-                style={{ 
-                  width: 'fit-content', 
-                  marginBottom: '12px',
-                  color: item.statusColor || undefined,
-                  borderColor: item.statusColor ? `${item.statusColor}50` : undefined,
-                  background: item.statusColor ? `${item.statusColor}15` : undefined
-                }}
-              >
-                <Sparkles size={14}/> {item.status || 'Ativo'}
-              </div>
+              {renderCardMeta({ marginBottom: '14px' })}
               <h2>{item.title}</h2>
               <p>{item.desc}</p>
             </div>
-            <div className="large-icon"><IconComponent size={64} /></div>
+            <div className="large-icon"><IconComponent size={64} strokeWidth={1.5} /></div>
           </div>
           {item.isDownload && <div className="abstract-glow cyan-glow" />}
         </>
@@ -364,19 +416,17 @@ const BentoGrid = (props) => {
     return (
       <div className="tool-inner" style={{ translateZ: item.innerZ }}>
         <div className="tool-header">
-          <div className="icon-box" style={{ background: item.iconBg, color: item.iconColor }}>
-            <IconComponent size={24} className={`small-icon anim-svg-${item.icon.toLowerCase()}`} />
-          </div>
-          <div 
-            className={`status-badge ${!item.status ? 'ping-active' : ''}`}
-            style={{ 
-              color: item.statusColor || undefined,
-              borderColor: item.statusColor ? `${item.statusColor}50` : undefined,
-              background: item.statusColor ? `${item.statusColor}15` : undefined
+          <div
+            className="icon-box"
+            style={{
+              background: item.iconBg || catAccent.bg,
+              color: item.iconColor || catAccent.color,
+              borderColor: item.iconBg ? 'transparent' : catAccent.border
             }}
           >
-            <Sparkles size={14}/> {item.status || 'Ativo'}
+            <IconComponent size={24} className={`small-icon anim-svg-${item.icon.toLowerCase()}`} />
           </div>
+          {renderCardMeta()}
         </div>
         <div className="tool-body">
           <h2>{item.title}</h2>
@@ -400,17 +450,27 @@ const BentoGrid = (props) => {
 
   const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-  const filteredItems = items.filter(item => {
-    const matchCategory = activeCategory === 'Todas' || item.category === activeCategory;
-    if (!searchQuery) return matchCategory;
-    
-    const title = normalize(item.title);
-    const desc = normalize(item.desc);
-    const normQ = normalize(searchQuery);
-    
-    const matchSearch = title.includes(normQ) || desc.includes(normQ) || fuzzyMatch(title, normQ);
-    return matchCategory && matchSearch;
-  });
+  const filteredItems = items
+    .filter(item => {
+      const matchCategory =
+        activeCategory === 'Todas' ||
+        (activeCategory === 'Favoritos' ? favorites.includes(item.id) : item.category === activeCategory);
+      if (!searchQuery) return matchCategory;
+      
+      const title = normalize(item.title);
+      const desc = normalize(item.desc);
+      const category = normalize(item.category || '');
+      const normQ = normalize(searchQuery);
+      
+      const matchSearch = title.includes(normQ) || desc.includes(normQ) || category.includes(normQ) || fuzzyMatch(title, normQ);
+      return matchCategory && matchSearch;
+    })
+    .sort((a, b) => {
+      if (isEditing) return 0;
+      const aFav = favorites.includes(a.id) ? 1 : 0;
+      const bFav = favorites.includes(b.id) ? 1 : 0;
+      return bFav - aFav;
+    });
 
   return (
     <div className="bento-wrapper">
@@ -443,6 +503,23 @@ const BentoGrid = (props) => {
               ))}
             </AnimatePresence>
           </SortableContext>
+
+          {filteredItems.length === 0 && (
+            <div className="bento-empty-state glass-panel">
+              <Search size={30} className="empty-state-icon" />
+              <h3>Nenhuma ferramenta encontrada</h3>
+              <p>
+                {activeCategory === 'Favoritos' && !searchQuery
+                  ? 'Nenhuma ferramenta fixada ainda. Clique na estrela no canto de qualquer card para fixá-la aqui.'
+                  : 'Tente outro termo de busca ou limpe os filtros selecionados.'}
+              </p>
+              {onClearFilters && (
+                <button type="button" className="btn-secondary empty-clear-btn" onClick={onClearFilters}>
+                  Limpar filtros
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Drag Overlay to prevent deformation during drag */}
           <DragOverlay>

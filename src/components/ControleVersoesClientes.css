@@ -86,8 +86,27 @@
   border-radius: 8px;
   font-size: 0.84rem;
   font-weight: 600;
+  font-family: inherit;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-pill:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.kpi-pill.active-kpi {
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+.kpi-pill small {
+  font-size: 0.76rem;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 .kpi-pill strong {

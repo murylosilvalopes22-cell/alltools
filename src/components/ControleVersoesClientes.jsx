@@ -117,11 +117,10 @@ const ControleVersoesClientes = ({ onBack }) => {
     reader.onload = (evt) => {
       try {
         const data = new Uint8Array(evt.target.result);
-        const xlsxLib = XLSX.read ? XLSX : XLSX.default;
-        const wb = xlsxLib.read(data, { type: 'array' });
+        const wb = XLSX.read(data, { type: 'array' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const jsonRows = xlsxLib.utils.sheet_to_json(ws, { header: 1 });
+        const jsonRows = XLSX.utils.sheet_to_json(ws, { header: 1 });
         processExcelData(jsonRows);
       } catch (err) {
         console.error("Erro ao ler excel:", err);
@@ -375,6 +374,7 @@ const ControleVersoesClientes = ({ onBack }) => {
     return clientes.filter(c => isVersionBelowTarget(c.versao, "04.12.00.00")).length;
   }, [clientes]);
   const atualizadosCount = totalClientes - desatualizadosCount;
+  const atualizadosPercent = totalClientes > 0 ? Math.round((atualizadosCount / totalClientes) * 100) : 0;
 
   const handleUpdateClientVersion = async () => {
     if (!modalUpdateClient) return;
@@ -479,6 +479,30 @@ const ControleVersoesClientes = ({ onBack }) => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (clientesFiltrados.length === 0) {
+      alert('Não há clientes visíveis no filtro atual para exportar.');
+      return;
+    }
+
+    const exportRows = clientesFiltrados.map(c => ({
+      'Licença': c.num || c.id || '',
+      'Nome do Cliente': c.nome || '',
+      'Sistema': c.sistema || '',
+      'Versão': c.versao || '',
+      'Situação': c.situacao || '',
+      'Tag / Etiqueta': c.etiqueta || '',
+      'Observação': c.obs || '',
+      'Endereço': c.endereco || ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(exportRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `clientes_versoes_${dateStr}.xlsx`);
+  };
+
   return (
     <motion.div 
       className="controle-versoes-container"
@@ -496,20 +520,36 @@ const ControleVersoesClientes = ({ onBack }) => {
           </div>
         </div>
 
-        {/* Ribbons Compactos de KPIs */}
+        {/* Ribbons Compactos de KPIs (Filtros Rápidos) */}
         <div className="controle-kpi-ribbon">
-          <div className="kpi-pill total" title="Total de Clientes">
+          <button
+            type="button"
+            className={`kpi-pill total ${filterVersao === 'ALL' ? 'active-kpi' : ''}`}
+            onClick={() => setFilterVersao('ALL')}
+            title="Clique para mostrar todos os clientes"
+          >
             <span>Total:</span>
             <strong>{totalClientes}</strong>
-          </div>
-          <div className="kpi-pill warning" title="Abaixo da 04.12">
+          </button>
+          <button
+            type="button"
+            className={`kpi-pill warning ${filterVersao === '' ? 'active-kpi' : ''}`}
+            onClick={() => setFilterVersao('')}
+            title="Clique para filtrar apenas versões abaixo da 04.12"
+          >
             <span>&lt; 04.12:</span>
             <strong>{desatualizadosCount}</strong>
-          </div>
-          <div className="kpi-pill success" title="Versões Atualizadas">
+          </button>
+          <button
+            type="button"
+            className={`kpi-pill success ${filterVersao === 'ONLY_OK' ? 'active-kpi' : ''}`}
+            onClick={() => setFilterVersao('ONLY_OK')}
+            title="Clique para filtrar apenas clientes atualizados (≥ 04.12)"
+          >
             <span>Atualizados:</span>
             <strong>{atualizadosCount}</strong>
-          </div>
+            <small>({atualizadosPercent}%)</small>
+          </button>
         </div>
 
         {/* Botões do Topo */}
@@ -529,6 +569,9 @@ const ControleVersoesClientes = ({ onBack }) => {
           />
           <button className="btn-compact-action btn-manage-ver" onClick={() => fileInputRef.current.click()} title="Importar/Sincronizar Excel de Clientes">
             <Upload size={16} /> Importar Excel
+          </button>
+          <button className="btn-compact-action btn-manage-ver" onClick={handleExportExcel} title="Exportar lista atual para Excel">
+            <Download size={16} /> Exportar Excel
           </button>
           <button 
             className="btn-compact-action btn-manage-ver" 
